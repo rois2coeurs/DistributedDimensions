@@ -23,6 +23,10 @@ public class NetherPortalListener implements Listener {
     @EventHandler
     public void onPlayerPortal(PlayerPortalEvent e) {
         if (e.getCause() != PlayerPortalEvent.TeleportCause.NETHER_PORTAL) return;
+        if (dimension == Dimension.END) {
+            e.setCancelled(true); // portail Nether n'existe pas dans l'End
+            return;
+        }
 
         e.setCancelled(true);
 

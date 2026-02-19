@@ -3,6 +3,7 @@ package com.edouardcourty.dd.paper;
 import com.edouardcourty.dd.common.messaging.Channels;
 import com.edouardcourty.dd.common.model.Dimension;
 import com.edouardcourty.dd.common.service.DimensionSwitchService;
+import com.edouardcourty.dd.paper.listener.DimensionGuardListener;
 import com.edouardcourty.dd.paper.listener.DimensionSwitchListener;
 import com.edouardcourty.dd.paper.listener.EndPortalListener;
 import com.edouardcourty.dd.paper.listener.EntityPortalListener;
@@ -46,5 +47,6 @@ public class DistributedDimensions extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new EndPortalListener(dimension, dimensionSwitchService, positionStore), this);
         getServer().getPluginManager().registerEvents(new EntityPortalListener(dimension, this), this);
         getServer().getPluginManager().registerEvents(new RespawnListener(dimension, dimensionSwitchService, this), this);
+        getServer().getPluginManager().registerEvents(new DimensionGuardListener(this, dimension), this);
     }
 }

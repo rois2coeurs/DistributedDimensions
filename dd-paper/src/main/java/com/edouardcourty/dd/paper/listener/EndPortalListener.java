@@ -26,6 +26,8 @@ public class EndPortalListener implements Listener {
 
         e.setCancelled(true);
 
+        if (dimension == Dimension.NETHER) return; // portail End n'a pas de sens dans le Nether
+
         positionStore.save(e.getPlayer().getUniqueId(), e.getFrom());
 
         if (dimension == Dimension.OVERWORLD) {
