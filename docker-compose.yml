@@ -1,0 +1,58 @@
+name: distributed-dimensions
+
+services:
+  overworld:
+    image: eclipse-temurin:21-jre-jammy
+    working_dir: /server
+    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-1.21.11-116.jar", "--nogui"]
+    volumes:
+      - .dev/paper/overworld:/server
+    networks: [distributed-dimensions]
+    restart: unless-stopped
+
+  nether:
+    image: eclipse-temurin:21-jre-jammy
+    working_dir: /server
+    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-1.21.11-116.jar", "--nogui"]
+    volumes:
+      - .dev/paper/nether:/server
+    networks: [distributed-dimensions]
+    restart: unless-stopped
+
+  end:
+    image: eclipse-temurin:21-jre-jammy
+    working_dir: /server
+    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-1.21.11-116.jar", "--nogui"]
+    volumes:
+      - .dev/paper/end:/server
+    networks: [distributed-dimensions]
+    restart: unless-stopped
+
+  velocity:
+    image: eclipse-temurin:21-jre-jammy
+    working_dir: /server
+    command:
+      - java
+      - -Xms256M
+      - -Xmx512M
+      - -XX:+UseG1GC
+      - -XX:G1HeapRegionSize=4M
+      - -XX:+UnlockExperimentalVMOptions
+      - -XX:+ParallelRefProcEnabled
+      - -XX:+AlwaysPreTouch
+      - -jar
+      - velocity-3.5.0-SNAPSHOT-576.jar
+    ports:
+      - "25565:25565"
+    volumes:
+      - .dev/velocity:/server
+    depends_on:
+      - overworld
+      - nether
+      - end
+    networks: [distributed-dimensions]
+    restart: unless-stopped
+
+networks:
+  distributed-dimensions:
+    driver: bridge

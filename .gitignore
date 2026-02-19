@@ -1,0 +1,11 @@
+# IntelliJ
+.idea/
+*.iml
+.run/
+
+# macOS
+.DS_Store
+
+# Maven build output
+target/
+dependency-reduced-pom.xml

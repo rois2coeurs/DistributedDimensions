@@ -1,0 +1,2 @@
+world: END
+debug: false     # Set to true to enable verbose debug logging

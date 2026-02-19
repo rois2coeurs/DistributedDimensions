@@ -1,0 +1,54 @@
+config-version = "2.7"
+
+# Bind address — proxy entry point for players
+bind = "0.0.0.0:25565"
+
+motd = "<gradient:green:aqua>DistributedDimensions</gradient> <gray>— Dev</gray>"
+show-max-players = 10
+
+online-mode = true
+force-key-authentication = true
+prevent-client-proxy-connections = false
+
+# Use MODERN forwarding so Paper servers trust player data from Velocity
+# Secret must match the value in .dev/velocity/forwarding.secret
+# and in each Paper server's config/paper-global.yml
+player-info-forwarding-mode = "MODERN"
+
+announce-forge = false
+kick-existing-players = false
+ping-passthrough = "DISABLED"
+enable-player-address-logging = true
+
+[servers]
+overworld = "overworld:25566"
+nether    = "nether:25567"
+end       = "end:25568"
+
+# Default server when a player connects
+try = ["overworld"]
+
+[forced-hosts]
+# No forced hosts in dev
+
+[advanced]
+compression-threshold = 256
+compression-level = -1
+login-ratelimit = 3000
+connection-timeout = 5000
+read-timeout = 30000
+haproxy-protocol = false
+tcp-fast-open = false
+bungee-plugin-message-channel = true
+show-ping-requests = false
+failover-on-unexpected-server-disconnect = true
+announce-proxy-commands = true
+log-command-executions = false
+log-player-connections = true
+accepts-transfers = false
+
+[query]
+enabled = false
+port = 25577
+map = "Velocity"
+show-plugins = false
