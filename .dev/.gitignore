@@ -1,0 +1,45 @@
+# Generated world data
+paper/*/world/
+paper/*/world_nether/
+paper/*/world_the_end/
+
+# Server runtime files
+paper/*/logs/
+paper/*/crash-reports/
+paper/*/cache/
+paper/*/libraries/
+paper/*/versions/
+paper/*/*.lock
+paper/*/session.lock
+paper/*/usercache.json
+paper/*/banned-ips.json
+paper/*/banned-players.json
+paper/*/whitelist.json
+paper/*/config/paper-world-defaults.yml
+paper/*/config/paper-world.yml
+paper/*/bukkit.yml
+paper/*/spigot.yml
+paper/*/commands.yml
+paper/*/help.yml
+paper/*/permissions.yml
+paper/*/version_history.json
+
+# Paper plugin runtime data (généré au lancement)
+paper/*/plugins/.paper-remapped/
+paper/*/plugins/bStats/
+paper/*/plugins/spark/
+
+# Velocity runtime files
+velocity/logs/
+velocity/cache/
+velocity/lang/
+velocity/plugins/distributed-dimensions/
+
+# Server JARs — téléchargés séparément, non versionnés
+paper/*/*.jar
+velocity/*.jar
+
+# Compiled plugins — built from source, not committed
+paper/*/plugins/*.jar
+velocity/plugins/*.jar
+/velocity/plugins/bStats/config.txt

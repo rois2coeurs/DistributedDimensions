@@ -1,0 +1,6 @@
+{
+  "id": "distributed-dimensions",
+  "name": "DistributedDimensionsProxy",
+  "version": "1.0.0",
+  "main": "com.edouardcourty.dd.velocity.DistributedDimensions"
+}
