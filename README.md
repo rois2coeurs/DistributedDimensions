@@ -65,17 +65,116 @@ Connect with a Minecraft 1.21.11 client on `localhost:25565`.
 
 ## Configuration
 
-Each Paper server declares its dimension in `plugins/DistributedDimensions/config.yml`:
+### Overview
+
+Velocity uses **Modern Forwarding** to securely pass authenticated player data (UUID, username, skin) to the Paper backend servers. This requires a shared secret that must be identical in three places:
+
+```
+.dev/velocity/forwarding.secret          ← secret value (plain text)
+.dev/velocity/velocity.toml              ← references this file implicitly
+.dev/paper/<dimension>/config/paper-global.yml  ← must contain the same value
+```
+
+If the secret mismatches, Paper will refuse connections from Velocity and players will be kicked.
+
+---
+
+### `.dev/velocity/forwarding.secret`
+
+Plain-text file containing the shared secret. One line, no trailing newline.
+
+```
+distributeddimensions-dev
+```
+
+> Change this to a strong random string in production (e.g. `openssl rand -hex 32`).
+
+---
+
+### `.dev/velocity/velocity.toml`
+
+Key settings relevant to this project:
+
+```toml
+bind = "0.0.0.0:25565"
+online-mode = true
+
+# MODERN forwarding: Velocity authenticates the player and forwards
+# their real UUID/skin to Paper using the shared secret.
+player-info-forwarding-mode = "MODERN"
+
+[servers]
+overworld = "overworld:25566"
+nether    = "nether:25567"
+end       = "end:25568"
+
+# Server players connect to by default
+try = ["overworld"]
+```
+
+---
+
+### `.dev/paper/<dimension>/config/paper-global.yml`
+
+Each Paper server must enable Velocity forwarding and provide the **exact same secret**:
 
 ```yaml
+proxies:
+  velocity:
+    enabled: true
+    online-mode: true
+    secret: distributeddimensions-dev   # must match forwarding.secret
+```
+
+---
+
+### `.dev/paper/<dimension>/server.properties`
+
+Paper servers must run with `online-mode=false` because Velocity handles authentication:
+
+```properties
+online-mode=false
+server-port=25566   # 25566 overworld · 25567 nether · 25568 end
+```
+
+---
+
+### `.dev/paper/<dimension>/plugins/DistributedDimensions/config.yml`
+
+Each Paper server declares which dimension it serves:
+
+```yaml
+# .dev/paper/overworld/plugins/DistributedDimensions/config.yml
 world: OVERWORLD   # OVERWORLD | NETHER | END
 debug: false
 ```
 
-The Velocity plugin reads `plugins/distributed-dimensions/config.toml`:
+```yaml
+# .dev/paper/nether/plugins/DistributedDimensions/config.yml
+world: NETHER
+debug: false
+```
+
+```yaml
+# .dev/paper/end/plugins/DistributedDimensions/config.yml
+world: END
+debug: false
+```
+
+---
+
+### `.dev/velocity/plugins/distributed-dimensions/config.toml`
+
+Maps each dimension to its Velocity server name. Names must match the `[servers]` section in `velocity.toml`:
 
 ```toml
+[settings]
 debug = false
+
+[servers]
+overworld = "overworld"
+nether    = "nether"
+end       = "end"
 ```
 
 ---
