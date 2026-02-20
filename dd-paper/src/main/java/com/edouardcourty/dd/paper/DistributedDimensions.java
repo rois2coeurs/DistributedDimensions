@@ -27,7 +27,7 @@ public class DistributedDimensions extends JavaPlugin {
         dimension = Dimension.valueOf(getConfig().getString("world", Dimension.OVERWORLD.name()));
         dimensionSwitchService = new VelocityPluginMessageSwitchService(this);
 
-        PrePortalPositionStore positionStore = new PrePortalPositionStore();
+        PrePortalPositionStore positionStore = new PrePortalPositionStore(this);
 
         DimensionSwitchListener dimSwitchListener = new DimensionSwitchListener(this, positionStore);
         getServer().getMessenger().registerOutgoingPluginChannel(this, Channels.DIM_SWITCH.toString());

@@ -22,18 +22,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class EntityTransferHandler {
     private final ProxyServer server;
+    private final Map<String, String> serverNames;
     private final MinecraftChannelIdentifier channel = MinecraftChannelIdentifier.from(Channels.ENTITY_TRANSFER.toString());
     private final Map<String, Queue<byte[]>> pendingTransfers = new ConcurrentHashMap<>();
 
-    public EntityTransferHandler(ProxyServer server) {
+    public EntityTransferHandler(ProxyServer server, Map<String, String> serverNames) {
         this.server = server;
+        this.serverNames = serverNames;
     }
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityTransferHandler.class);
 
     public void handle(PluginMessageEvent event) {
         ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
-        String targetServerName = in.readUTF().toLowerCase();
+        String dimensionKey = in.readUTF().toLowerCase();
+        String targetServerName = serverNames.getOrDefault(dimensionKey, dimensionKey);
 
         RegisteredServer targetServer = server.getServer(targetServerName).orElse(null);
         if (targetServer == null) {

@@ -72,7 +72,7 @@ public class DimensionSwitchListener implements PluginMessageListener {
         }
 
         player.teleport(target);
-        player.setPortalCooldown(PortalConstants.PORTAL_COOLDOWN_TICKS);
+        player.setPortalCooldown(PortalConstants.PLAYER_PORTAL_COOLDOWN_TICKS);
 
         positionStore.clear(state.playerUuid());
         applyState(player, state);

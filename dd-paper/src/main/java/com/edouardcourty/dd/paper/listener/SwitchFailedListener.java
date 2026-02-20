@@ -37,7 +37,7 @@ public class SwitchFailedListener implements PluginMessageListener {
         positionStore.remove(uuid).ifPresent(player::teleport);
         player.setPortalCooldown(PortalConstants.PORTAL_COOLDOWN_TICKS);
         player.sendMessage(Component.text(
-            "Le serveur de destination est inaccessible. Réessayez plus tard.",
+            "Destination server is unreachable. Please try again later.",
             NamedTextColor.RED
         ));
         plugin.getLogger().warning("[SwitchFailed] Player " + player.getName() + " could not switch dimension — server offline.");

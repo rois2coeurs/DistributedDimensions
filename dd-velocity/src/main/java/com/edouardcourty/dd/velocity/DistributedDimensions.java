@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 @Plugin(id = "distributed-dimensions", name = "DistributedDimensionsProxy", version = "1.0.0")
@@ -46,6 +48,7 @@ public class DistributedDimensions {
     @Subscribe
     public void onProxyInit(ProxyInitializeEvent event) {
         boolean debug = loadDebugConfig();
+        Map<String, String> serverNames = loadServerNames();
         debugLogger = new DebugLogger(logger, debug);
 
         dimSwitchChannel = MinecraftChannelIdentifier.from(Channels.DIM_SWITCH.toString());
@@ -54,8 +57,8 @@ public class DistributedDimensions {
         server.getChannelRegistrar().register(entityTransferChannel);
 
         PlayerStateStore playerStateStore = new PlayerStateStore(dataDirectory, logger);
-        dimensionSwitchHandler = new DimensionSwitchHandler(server, playerStateStore);
-        entityTransferHandler = new EntityTransferHandler(server);
+        dimensionSwitchHandler = new DimensionSwitchHandler(server, playerStateStore, serverNames);
+        entityTransferHandler = new EntityTransferHandler(server, serverNames);
 
         LastServerStore lastServerStore = new LastServerStore(dataDirectory, logger);
         server.getEventManager().register(this, new PlayerSessionListener(server, lastServerStore, playerStateStore, entityTransferHandler));
@@ -74,6 +77,43 @@ public class DistributedDimensions {
     }
 
     private boolean loadDebugConfig() {
+        ensureConfig();
+        try {
+            String content = Files.readString(dataDirectory.resolve("config.toml"));
+            return content.contains("debug = true");
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private Map<String, String> loadServerNames() {
+        ensureConfig();
+        Map<String, String> names = new HashMap<>();
+        // Defaults
+        names.put("overworld", "overworld");
+        names.put("nether", "nether");
+        names.put("end", "end");
+        try {
+            String content = Files.readString(dataDirectory.resolve("config.toml"));
+            boolean inServersSection = false;
+            for (String line : content.lines().toList()) {
+                String trimmed = line.trim();
+                if (trimmed.equals("[servers]")) { inServersSection = true; continue; }
+                if (trimmed.startsWith("[")) { inServersSection = false; continue; }
+                if (inServersSection && trimmed.contains("=")) {
+                    String[] parts = trimmed.split("=", 2);
+                    String key = parts[0].trim();
+                    String value = parts[1].trim().replace("\"", "");
+                    names.put(key, value);
+                }
+            }
+        } catch (IOException e) {
+            logger.warn("[DistributedDimensions] Could not load server names from config: " + e.getMessage());
+        }
+        return names;
+    }
+
+    private void ensureConfig() {
         Path configFile = dataDirectory.resolve("config.toml");
         if (!Files.exists(configFile)) {
             try (InputStream in = getClass().getResourceAsStream("/config.toml")) {
@@ -82,12 +122,6 @@ public class DistributedDimensions {
                     Files.copy(in, configFile);
                 }
             } catch (IOException ignored) {}
-        }
-        try {
-            String content = Files.readString(configFile);
-            return content.contains("debug = true");
-        } catch (IOException e) {
-            return false;
         }
     }
 }

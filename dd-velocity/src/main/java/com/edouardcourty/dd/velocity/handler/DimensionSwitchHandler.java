@@ -12,21 +12,26 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class DimensionSwitchHandler {
     private final ProxyServer server;
     private final PlayerStateStore stateStore;
+    private final Map<String, String> serverNames;
 
-    public DimensionSwitchHandler(ProxyServer server, PlayerStateStore stateStore) {
+    public DimensionSwitchHandler(ProxyServer server, PlayerStateStore stateStore, Map<String, String> serverNames) {
         this.server = server;
         this.stateStore = stateStore;
+        this.serverNames = serverNames;
     }
 
     public void handle(PluginMessageEvent event) {
         ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
         UUID playerUuid = UUID.fromString(in.readUTF());
-        String targetServerName = in.readUTF().toLowerCase();
+        String dimensionKey = in.readUTF().toLowerCase();
+        String targetServerName = serverNames.getOrDefault(dimensionKey, dimensionKey);
         // les autres champs restent dans event.getData() pour le forward
 
         Player player = server.getPlayer(playerUuid).orElse(null);
@@ -41,19 +46,25 @@ public class DimensionSwitchHandler {
         ConnectionRequestBuilder req = player.createConnectionRequest(targetServer);
         byte[] stateBytes = event.getData();
 
-        req.connect().thenAccept(result -> {
-            if (result.getStatus() == ConnectionRequestBuilder.Status.SUCCESS) {
-                stateStore.save(playerUuid, stateBytes);
-                player.getCurrentServer().ifPresent(conn ->
-                    conn.sendPluginMessage(
-                        MinecraftChannelIdentifier.from(Channels.DIM_SWITCH.toString()),
-                        stateBytes
-                    )
-                );
-            } else {
+        req.connect()
+            .orTimeout(5, TimeUnit.SECONDS)
+            .thenAccept(result -> {
+                if (result.getStatus() == ConnectionRequestBuilder.Status.SUCCESS) {
+                    stateStore.save(playerUuid, stateBytes);
+                    player.getCurrentServer().ifPresent(conn ->
+                        conn.sendPluginMessage(
+                            MinecraftChannelIdentifier.from(Channels.DIM_SWITCH.toString()),
+                            stateBytes
+                        )
+                    );
+                } else {
+                    sendSwitchFailed(event, playerUuid);
+                }
+            })
+            .exceptionally(ex -> {
                 sendSwitchFailed(event, playerUuid);
-            }
-        });
+                return null;
+            });
     }
 
     private void sendSwitchFailed(PluginMessageEvent event, UUID playerUuid) {

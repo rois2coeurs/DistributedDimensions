@@ -1,3 +1,9 @@
 [settings]
 # Set to true to enable verbose debug logging
 debug = false
+
+[servers]
+# Map each dimension to its Velocity server name (must match velocity.toml [servers] section)
+overworld = "overworld"
+nether = "nether"
+end = "end"

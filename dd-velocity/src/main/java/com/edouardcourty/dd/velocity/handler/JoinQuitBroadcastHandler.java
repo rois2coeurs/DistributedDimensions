@@ -28,13 +28,13 @@ public class JoinQuitBroadcastHandler {
     public void onFirstServerConnect(ServerPostConnectEvent event) {
         if (event.getPreviousServer() != null) return;
         broadcast(Component.text(event.getPlayer().getUsername(), NamedTextColor.YELLOW)
-            .append(Component.text(" a rejoint le serveur.", NamedTextColor.WHITE)));
+            .append(Component.text(" joined the server.", NamedTextColor.WHITE)));
     }
 
     @Subscribe
     public void onDisconnect(DisconnectEvent event) {
         broadcast(Component.text(event.getPlayer().getUsername(), NamedTextColor.YELLOW)
-            .append(Component.text(" a quitté le serveur.", NamedTextColor.WHITE)));
+            .append(Component.text(" left the server.", NamedTextColor.WHITE)));
     }
 
     private void broadcast(Component message) {

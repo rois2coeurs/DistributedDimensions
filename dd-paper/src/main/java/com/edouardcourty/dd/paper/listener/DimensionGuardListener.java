@@ -56,7 +56,7 @@ public class DimensionGuardListener implements Listener {
         }
 
         plugin.getLogger().warning("[DimensionGuard] " + player.getName()
-            + " était dans '" + player.getWorld().getName()
+            + " was in '" + player.getWorld().getName()
             + "' au lieu de '" + expected + "' — correction automatique.");
 
         player.teleport(correct.getSpawnLocation());

@@ -3,7 +3,7 @@ VELOCITY_JAR := dd-velocity/target/dd-velocity-1.0.0.jar
 
 PAPER_SERVERS := overworld nether end
 
-.PHONY: build deploy all start stop logs
+.PHONY: build deploy all release start stop logs
 
 all: build deploy
 
@@ -17,7 +17,15 @@ deploy: $(PAPER_JAR) $(VELOCITY_JAR)
 $(PAPER_JAR) $(VELOCITY_JAR):
 	$(MAKE) build
 
-start: all
+release:
+	mvn clean package -q
+	@mkdir -p release
+	cp $(PAPER_JAR) release/
+	cp $(VELOCITY_JAR) release/
+	@echo "JARs disponibles dans release/ :"
+	@ls -1 release/
+
+
 	docker compose up -d
 
 stop:

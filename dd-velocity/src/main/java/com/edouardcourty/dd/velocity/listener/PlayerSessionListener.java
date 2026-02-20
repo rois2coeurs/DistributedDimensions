@@ -4,6 +4,7 @@ import com.edouardcourty.dd.common.messaging.Channels;
 import com.edouardcourty.dd.velocity.handler.EntityTransferHandler;
 import com.edouardcourty.dd.velocity.store.LastServerStore;
 import com.edouardcourty.dd.velocity.store.PlayerStateStore;
+import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
@@ -14,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerSessionListener {
     private final ProxyServer server;
@@ -29,17 +31,26 @@ public class PlayerSessionListener {
     }
 
     @Subscribe
-    public void onChooseInitialServer(PlayerChooseInitialServerEvent event) {
-        lastServerStore.get(event.getPlayer().getUniqueId()).ifPresent(serverName -> {
-            Optional<RegisteredServer> serverOpt = server.getServer(serverName);
-            if (serverOpt.isEmpty()) {
-                event.getPlayer().disconnect(Component.text(
-                    "Le serveur " + serverName + " est inaccessible. Reconnectez-vous dans quelques instants.",
-                    NamedTextColor.RED
-                ));
-                return;
+    public EventTask onChooseInitialServer(PlayerChooseInitialServerEvent event) {
+        Optional<String> lastServerOpt = lastServerStore.get(event.getPlayer().getUniqueId());
+        if (lastServerOpt.isEmpty()) return null;
+
+        String serverName = lastServerOpt.get();
+        Optional<RegisteredServer> registeredOpt = server.getServer(serverName);
+        if (registeredOpt.isEmpty()) return null;
+
+        RegisteredServer target = registeredOpt.get();
+        return EventTask.async(() -> {
+            try {
+                target.ping().get(3, TimeUnit.SECONDS);
+                event.setInitialServer(target);
+            } catch (Exception e) {
+                event.getPlayer().disconnect(
+                    Component.text("Server ", NamedTextColor.RED)
+                        .append(Component.text(serverName, NamedTextColor.YELLOW))
+                        .append(Component.text(" is offline.\nPlease reconnect when it becomes available.", NamedTextColor.RED))
+                );
             }
-            event.setInitialServer(serverOpt.get());
         });
     }
 
@@ -48,14 +59,15 @@ public class PlayerSessionListener {
         event.getPlayer().getCurrentServer().ifPresent(conn -> {
             entityTransferHandler.deliverPending(conn.getServer());
 
-            // Restaurer l'état complet du joueur lors de la première connexion (reconnexion)
+            // Restore full player state on first connection (reconnect after switch)
             if (event.getPreviousServer() == null) {
-                playerStateStore.get(event.getPlayer().getUniqueId()).ifPresent(stateBytes ->
+                playerStateStore.get(event.getPlayer().getUniqueId()).ifPresent(stateBytes -> {
                     conn.getServer().sendPluginMessage(
                         com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier.from(Channels.RESTORE_STATE.toString()),
                         stateBytes
-                    )
-                );
+                    );
+                    playerStateStore.delete(event.getPlayer().getUniqueId());
+                });
             }
         });
     }

@@ -8,4 +8,5 @@
 
 # Maven build output
 target/
+release/
 dependency-reduced-pom.xml

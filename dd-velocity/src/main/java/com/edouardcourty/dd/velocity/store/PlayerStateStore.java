@@ -35,6 +35,15 @@ public class PlayerStateStore {
         return Optional.ofNullable(data.get(uuid));
     }
 
+    public void delete(UUID uuid) {
+        data.remove(uuid);
+        try {
+            Files.deleteIfExists(directory.resolve(uuid + ".bin"));
+        } catch (IOException e) {
+            logger.warn("[PlayerStateStore] Could not delete state for " + uuid + ": " + e.getMessage());
+        }
+    }
+
     private void load() {
         if (!Files.exists(directory)) return;
         try {
