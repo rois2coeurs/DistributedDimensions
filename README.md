@@ -1,5 +1,7 @@
 # DistributedDimensions
 
+[![CI](https://github.com/DistributedDimensions/DistributedDimensions/actions/workflows/ci.yml/badge.svg)](https://github.com/DistributedDimensions/DistributedDimensions/actions/workflows/ci.yml)
+
 A Minecraft plugin system that splits a world across **one Paper server per dimension**, coordinated by a Velocity proxy.
 
 ```
