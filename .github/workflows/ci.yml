@@ -1,14 +1,17 @@
-name: CI
+name: CI & Release
 
 on:
   push:
-    branches: ["**"]
+    branches: [ "**" ]
+    tags: [ "v*" ]
   pull_request:
-    branches: ["**"]
+    branches: [ "**" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -20,5 +23,26 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Build
-        run: mvn --batch-mode clean package -DskipTests
+      - name: Test and Build
+        run: mvn --batch-mode clean package
+
+      - name: Upload Paper Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dd-paper
+          path: dd-paper/target/dd-paper-*.jar
+
+      - name: Upload Velocity Plugin Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dd-velocity
+          path: dd-velocity/target/dd-velocity-*.jar
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dd-paper/target/dd-paper-*.jar
+            dd-velocity/target/dd-velocity-*.jar
+          generate_release_notes: true
