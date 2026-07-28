@@ -53,7 +53,7 @@ Plugin installé sur chaque serveur Paper (Overworld, Nether, End).
 | `messaging/` | `PlayerStateSerializer` — sérialise/désérialise l'état complet du joueur |
 | `portal/` | `SafeLocationFinder` (trouve un spawn sûr) et `PortalBuilder` (construit un portail physique) |
 
-Version API ciblée : **Paper 1.21.11** (Java 21)
+Version API ciblée : **Paper 26.2** (Java 21)
 
 ### `dd-velocity` — Plugin Velocity (proxy)
 
@@ -118,7 +118,7 @@ La sérialisation utilise **Guava `ByteStreams`**. Le format exact est document�
 
 ## Conventions de développement
 
-- **Java 21** (class file 65.0) — Paper 1.21.11 l'exige
+- **Java 21** (class file 65.0) — Paper 26.2 l'exige
 - **Séparation des concerns** : chaque classe a une responsabilité unique
   - Les listeners ne font que lire des événements et déléguer
   - La sérialisation vit exclusivement dans `PlayerStateSerializer`
@@ -161,7 +161,7 @@ Le dossier `.dev/` contient tout le nécessaire pour lancer un environnement de 
 │   └── plugins/                  ← dd-velocity.jar déployé ici
 └── paper/
     ├── overworld/                ← port 25566
-    │   ├── paper-1.21.11-116.jar
+    │   ├── paper-26.2-116.jar
     │   ├── server.properties
     │   ├── config/paper-global.yml
     │   └── plugins/              ← dd-paper.jar déployé ici
@@ -182,7 +182,7 @@ Le dossier `.dev/` contient tout le nécessaire pour lancer un environnement de 
 
 Le secret est dans `.dev/velocity/forwarding.secret` et doit correspondre au champ `secret` dans `config/paper-global.yml` de chaque serveur Paper. Les serveurs Paper tournent avec `online-mode=false`, c'est Velocity qui gère l'authentification.
 
-Se connecter sur `localhost:25565` avec un client Minecraft 1.21.11.
+Se connecter sur `localhost:25565` avec un client Minecraft 26.2.
 
 
 ## Vision
@@ -335,7 +335,7 @@ Le dossier `.dev/` contient tout le nécessaire pour lancer un environnement de 
 │   └── forwarding.secret         ← secret partagé avec les serveurs Paper
 └── paper/
     ├── overworld/                ← port 25566
-    │   ├── paper-1.21.11-116.jar
+    │   ├── paper-26.2-116.jar
     │   ├── eula.txt
     │   ├── server.properties
     │   └── config/paper-global.yml
@@ -370,7 +370,7 @@ cp dd-velocity/target/dd-velocity-*.jar .dev/velocity/plugins/
 cd .dev && ./start-all.sh
 ```
 
-Se connecter ensuite sur `localhost:25565` avec un client Minecraft 1.21.11.
+Se connecter ensuite sur `localhost:25565` avec un client Minecraft 26.2.
 
 ### Forwarding Velocity → Paper
 

@@ -4,7 +4,7 @@ services:
   overworld:
     image: eclipse-temurin:21-jre-jammy
     working_dir: /server
-    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-1.21.11-116.jar", "--nogui"]
+    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-26.2.jar", "--nogui"]
     volumes:
       - .dev/paper/overworld:/server
     networks: [distributed-dimensions]
@@ -13,7 +13,7 @@ services:
   nether:
     image: eclipse-temurin:21-jre-jammy
     working_dir: /server
-    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-1.21.11-116.jar", "--nogui"]
+    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-26.2.jar", "--nogui"]
     volumes:
       - .dev/paper/nether:/server
     networks: [distributed-dimensions]
@@ -22,7 +22,7 @@ services:
   end:
     image: eclipse-temurin:21-jre-jammy
     working_dir: /server
-    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-1.21.11-116.jar", "--nogui"]
+    command: ["java", "-Xms512M", "-Xmx1G", "-jar", "paper-26.2.jar", "--nogui"]
     volumes:
       - .dev/paper/end:/server
     networks: [distributed-dimensions]

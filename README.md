@@ -36,7 +36,7 @@ Nether coordinate scaling (1:8 ratio) and End platform spawning are handled auto
 | `dd-paper` | Paper plugin — portal detection, state serialization, player teleportation, dimension guard |
 | `dd-velocity` | Velocity plugin — player routing, state forwarding, cross-server chat |
 
-- **Paper API:** 1.21.11 · **Java:** 21
+- **Paper API:** 26.2 · **Java:** 21
 - **Velocity API:** 3.5.0-SNAPSHOT
 
 ---
@@ -45,7 +45,7 @@ Nether coordinate scaling (1:8 ratio) and End platform spawning are handled auto
 
 - Java 21
 - A Velocity 3.x proxy
-- Three Paper 1.21.11 servers (one per dimension)
+- Three Paper 26.2 servers (one per dimension)
 
 ---
 
@@ -61,7 +61,7 @@ make logs     # docker compose logs -f
 ```
 
 A ready-to-use Docker Compose environment is included in `.dev/`.  
-Connect with a Minecraft 1.21.11 client on `localhost:25565`.
+Connect with a Minecraft 26.2 client on `localhost:25565`.
 
 ---
 
