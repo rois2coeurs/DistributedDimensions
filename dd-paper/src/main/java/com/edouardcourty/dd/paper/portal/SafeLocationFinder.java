@@ -28,7 +28,6 @@ public class SafeLocationFinder {
     );
 
     private static final int MAX_SEARCH_RADIUS = 16;
-    private static final int PORTAL_SEARCH_RADIUS = 30;
     private static final int NETHER_MAX_Y = 115;
 
     private SafeLocationFinder() {}
@@ -44,8 +43,9 @@ public class SafeLocationFinder {
         int iz = (int) Math.floor(z);
         int maxY = getMaxSafeY(world);
 
-        // 1. Chercher un portail existant à proximité
-        Location existing = findExistingPortal(world, ix, iz, PORTAL_SEARCH_RADIUS, maxY, yaw, pitch);
+        // 1. Chercher un portail existant à proximité (128 blocs dans l'Overworld, 16 dans le Nether)
+        int searchRadius = world.getEnvironment() == World.Environment.NETHER ? 16 : 128;
+        Location existing = findExistingPortal(world, ix, iz, searchRadius, maxY, yaw, pitch);
         if (existing != null) return existing;
 
         // 2. Trouver un sol valide et construire un nouveau portail
@@ -71,7 +71,8 @@ public class SafeLocationFinder {
         int iz = (int) Math.floor(z);
         int maxY = getMaxSafeY(world);
 
-        Location existing = findExistingPortal(world, ix, iz, PORTAL_SEARCH_RADIUS, maxY, 0f, 0f);
+        int searchRadius = world.getEnvironment() == World.Environment.NETHER ? 16 : 128;
+        Location existing = findExistingPortal(world, ix, iz, searchRadius, maxY, 0f, 0f);
         if (existing != null) return existing;
 
         return findOnly(world, x, y, z, 0f, 0f);
