@@ -26,6 +26,11 @@ public class DistributedDimensions extends JavaPlugin {
 
         dimension = Dimension.valueOf(getConfig().getString("world", Dimension.OVERWORLD.name()));
         dimensionSwitchService = new VelocityPluginMessageSwitchService(this);
+        
+        org.bukkit.command.PluginCommand ddinfoCmd = getCommand("ddinfo");
+        if (ddinfoCmd != null) {
+            ddinfoCmd.setExecutor(new com.edouardcourty.dd.paper.command.DistributedDimensionsCommand(this, dimension));
+        }
 
         PrePortalPositionStore positionStore = new PrePortalPositionStore(this);
 
