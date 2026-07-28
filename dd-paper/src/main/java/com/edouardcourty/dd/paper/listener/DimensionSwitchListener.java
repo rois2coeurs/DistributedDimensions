@@ -89,6 +89,8 @@ public class DimensionSwitchListener implements PluginMessageListener {
     }
 
     private void applyState(Player player, PlayerStateSerializer.PlayerState state) {
+        if (!state.transferData()) return;
+
         player.getInventory().setContents(state.inventoryContents());
         player.getInventory().setArmorContents(state.armorContents());
         player.getInventory().setItemInOffHand(state.offhand());

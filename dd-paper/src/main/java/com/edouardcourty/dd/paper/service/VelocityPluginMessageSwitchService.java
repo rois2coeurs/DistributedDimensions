@@ -25,7 +25,8 @@ public class VelocityPluginMessageSwitchService implements DimensionSwitchServic
         if (player == null) return;
 
         var out = ByteStreams.newDataOutput();
-        PlayerStateSerializer.write(out, playerUuid, target, destination, player, buildPortal);
+        boolean transferData = plugin.getConfig().getBoolean("transfer-data", true);
+        PlayerStateSerializer.write(out, playerUuid, target, destination, player, buildPortal, transferData);
         player.sendPluginMessage(plugin, Channels.DIM_SWITCH.toString(), out.toByteArray());
     }
 }

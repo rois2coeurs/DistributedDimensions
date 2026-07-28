@@ -40,6 +40,8 @@ public class PlayerStateSerializer {
         UUID playerUuid,
         Dimension targetDimension,
         LocationData location,
+        boolean buildPortal,
+        boolean transferData,
         int xpLevel,
         float xpProgress,
         int foodLevel,
@@ -49,12 +51,11 @@ public class PlayerStateSerializer {
         ItemStack[] inventoryContents,
         ItemStack[] armorContents,
         ItemStack offhand,
-        boolean buildPortal,
         EntityTransferSerializer.EntityData vehicle,  // null si le joueur n'est pas dans un véhicule
         List<PotionEffect> potionEffects
     ) {}
 
-    public static void write(ByteArrayDataOutput out, UUID playerUuid, Dimension target, LocationData dest, Player player, boolean buildPortal) {
+    public static void write(ByteArrayDataOutput out, UUID playerUuid, Dimension target, LocationData dest, Player player, boolean buildPortal, boolean transferData) {
         out.writeUTF(playerUuid.toString());
         out.writeUTF(target.name());
         out.writeDouble(dest.x);
@@ -62,39 +63,43 @@ public class PlayerStateSerializer {
         out.writeDouble(dest.z);
         out.writeFloat(dest.yaw);
         out.writeFloat(dest.pitch);
-        out.writeInt(player.getLevel());
-        out.writeFloat(player.getExp());
-        out.writeInt(player.getFoodLevel());
-        out.writeFloat(player.getSaturation());
-        out.writeFloat(player.getExhaustion());
-        out.writeUTF(player.getGameMode().name());
-
-        PlayerInventory inv = player.getInventory();
-        writeItemArray(out, inv.getContents());
-        writeItemArray(out, inv.getArmorContents());
-        writeItem(out, inv.getItemInOffHand());
         out.writeBoolean(buildPortal);
+        out.writeBoolean(transferData);
 
-        // Effets de potion
-        Collection<PotionEffect> effects = player.getActivePotionEffects();
-        out.writeInt(effects.size());
-        for (PotionEffect effect : effects) {
-            out.writeUTF(effect.getType().getKey().toString());
-            out.writeInt(effect.getDuration());
-            out.writeInt(effect.getAmplifier());
-            out.writeBoolean(effect.isAmbient());
-            out.writeBoolean(effect.hasParticles());
-            out.writeBoolean(effect.hasIcon());
-        }
+        if (transferData) {
+            out.writeInt(player.getLevel());
+            out.writeFloat(player.getExp());
+            out.writeInt(player.getFoodLevel());
+            out.writeFloat(player.getSaturation());
+            out.writeFloat(player.getExhaustion());
+            out.writeUTF(player.getGameMode().name());
 
-        // Véhicule optionnel
-        org.bukkit.entity.Entity vehicle = player.getVehicle();
-        if (vehicle != null) {
-            out.writeBoolean(true);
-            EntityTransferSerializer.writeRoot(out, vehicle, target, dest.x, dest.y, dest.z);
-            player.leaveVehicle();
-        } else {
-            out.writeBoolean(false);
+            PlayerInventory inv = player.getInventory();
+            writeItemArray(out, inv.getContents());
+            writeItemArray(out, inv.getArmorContents());
+            writeItem(out, inv.getItemInOffHand());
+
+            // Effets de potion
+            Collection<PotionEffect> effects = player.getActivePotionEffects();
+            out.writeInt(effects.size());
+            for (PotionEffect effect : effects) {
+                out.writeUTF(effect.getType().getKey().toString());
+                out.writeInt(effect.getDuration());
+                out.writeInt(effect.getAmplifier());
+                out.writeBoolean(effect.isAmbient());
+                out.writeBoolean(effect.hasParticles());
+                out.writeBoolean(effect.hasIcon());
+            }
+
+            // Véhicule optionnel
+            org.bukkit.entity.Entity vehicle = player.getVehicle();
+            if (vehicle != null) {
+                out.writeBoolean(true);
+                EntityTransferSerializer.writeRoot(out, vehicle, target, dest.x, dest.y, dest.z);
+                player.leaveVehicle();
+            } else {
+                out.writeBoolean(false);
+            }
         }
     }
 
@@ -103,6 +108,19 @@ public class PlayerStateSerializer {
         Dimension dimension   = Dimension.valueOf(in.readUTF());
         double x = in.readDouble(), y = in.readDouble(), z = in.readDouble();
         float yaw = in.readFloat(), pitch = in.readFloat();
+        boolean buildPortal   = in.readBoolean();
+        boolean transferData  = in.readBoolean();
+
+        if (!transferData) {
+            return new PlayerState(
+                playerUuid, dimension,
+                LocationData.of(x, y, z, yaw, pitch),
+                buildPortal, false,
+                0, 0f, 0, 0f, 0f, null,
+                new ItemStack[0], new ItemStack[0], null, null, new ArrayList<>()
+            );
+        }
+
         int xpLevel           = in.readInt();
         float xpProgress      = in.readFloat();
         int foodLevel         = in.readInt();
@@ -112,7 +130,6 @@ public class PlayerStateSerializer {
         ItemStack[] contents  = readItemArray(in);
         ItemStack[] armor     = readItemArray(in);
         ItemStack offhand     = readItem(in);
-        boolean buildPortal   = in.readBoolean();
 
         // Effets de potion
         int effectCount = in.readInt();
@@ -135,9 +152,10 @@ public class PlayerStateSerializer {
         return new PlayerState(
             playerUuid, dimension,
             LocationData.of(x, y, z, yaw, pitch),
+            buildPortal, true,
             xpLevel, xpProgress,
             foodLevel, saturation, exhaustion,
-            gameMode, contents, armor, offhand, buildPortal, vehicle, potionEffects
+            gameMode, contents, armor, offhand, vehicle, potionEffects
         );
     }
 
