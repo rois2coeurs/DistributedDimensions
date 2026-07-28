@@ -1,2 +1,3 @@
 world: OVERWORLD # Can be either OVERWORLD, NETHER, or END
 debug: false     # Set to true to enable verbose debug logging
+transfer-data: true # Set to false to disable transferring player inventory, XP, health, etc.
