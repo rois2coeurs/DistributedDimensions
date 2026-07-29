@@ -1,190 +1,37 @@
 package com.edouardcourty.dd.paper.messaging;
 
-import org.bukkit.DyeColor;
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
+import de.tr7zw.nbtapi.iface.ReadableNBT;
 import org.bukkit.entity.*;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
-/**
- * Serializes and deserializes specific entity attributes as a "key=val;..." string.
- */
 public final class EntityExtraDataCodec {
     private EntityExtraDataCodec() {}
 
+    private static final Set<String> STRIPPED_KEYS = Set.of(
+            "WorldUUIDMost", "WorldUUIDLeast"
+    );
+
     public static String encode(Entity entity) {
-        Map<String, String> map = new LinkedHashMap<>();
-
-        if (entity instanceof Ageable ageable) {
-            map.put("adult", String.valueOf(ageable.isAdult()));
-            if (!ageable.isAdult()) map.put("age", String.valueOf(ageable.getAge()));
-        }
-        if (entity instanceof Slime slime) {
-            map.put("size", String.valueOf(slime.getSize()));
-        }
-        if (entity instanceof Tameable tameable) {
-            map.put("tamed", String.valueOf(tameable.isTamed()));
-        }
-        if (entity instanceof Sittable sittable) {
-            map.put("sitting", String.valueOf(sittable.isSitting()));
-        }
-        if (entity instanceof Sheep sheep) {
-            map.put("sheared", String.valueOf(sheep.isSheared()));
-            if (sheep.getColor() != null) map.put("woolColor", sheep.getColor().name());
-        }
-        if (entity instanceof Pig pig) {
-            map.put("saddle", String.valueOf(pig.hasSaddle()));
-        }
-        if (entity instanceof AbstractHorse horse) {
-            map.put("domestication", String.valueOf(horse.getDomestication()));
-            map.put("jumpStrength", String.valueOf(horse.getJumpStrength()));
-        }
-        if (entity instanceof Horse horse) {
-            map.put("horseColor", horse.getColor().name());
-            map.put("horseStyle", horse.getStyle().name());
-        }
-        if (entity instanceof Llama llama) {
-            map.put("llamaColor", llama.getColor().name());
-            map.put("strength", String.valueOf(llama.getStrength()));
-        }
-        if (entity instanceof Cat cat) {
-            map.put("catType", cat.getCatType().name());
-            map.put("catColor", cat.getCollarColor().name());
-        }
-        if (entity instanceof Wolf wolf) {
-            map.put("collarColor", wolf.getCollarColor().name());
-            map.put("angry", String.valueOf(wolf.isAngry()));
-        }
-        if (entity instanceof Fox fox) {
-            map.put("foxType", fox.getFoxType().name());
-        }
-        if (entity instanceof Rabbit rabbit) {
-            map.put("rabbitType", rabbit.getRabbitType().name());
-        }
-        if (entity instanceof Frog frog) {
-            map.put("frogVariant", frog.getVariant().getKey().toString());
-        }
-        if (entity instanceof TropicalFish fish) {
-            map.put("fishPattern", fish.getPattern().name());
-            map.put("fishBodyColor", fish.getBodyColor().name());
-            map.put("fishPatternColor", fish.getPatternColor().name());
-        }
-        if (entity instanceof Creeper creeper) {
-            map.put("powered", String.valueOf(creeper.isPowered()));
-        }
-        if (entity instanceof Zombie zombie) {
-            map.put("baby", String.valueOf(zombie.isBaby()));
-        }
-        if (entity instanceof Villager villager) {
-            map.put("villagerType", villager.getVillagerType().name());
-            map.put("villagerProfession", villager.getProfession().name());
-            map.put("villagerLevel", String.valueOf(villager.getVillagerLevel()));
-        }
-        if (entity instanceof ZombieVillager zv) {
-            map.put("zvProfession", zv.getVillagerProfession().name());
-        }
-        if (entity instanceof MushroomCow mooshroom) {
-            map.put("mushroomVariant", mooshroom.getVariant().name());
-        }
-        if (entity instanceof FallingBlock fb) {
-            map.put("fallingBlockType", fb.getBlockData().getAsString());
-        }
-
-        if (map.isEmpty()) return "";
-        StringBuilder sb = new StringBuilder();
-        map.forEach((k, v) -> sb.append(k).append('=').append(v).append(';'));
-        return sb.toString();
+        return NBT.get(entity, (ReadableNBT nbt) -> {
+            ReadWriteNBT copy = NBT.createNBTObject();
+            copy.mergeCompound(nbt);
+            for (String key : STRIPPED_KEYS) copy.removeKey(key);
+            return copy.toString();
+        });
     }
 
     public static Map<String, String> parse(String extraData) {
-        Map<String, String> map = new HashMap<>();
-        if (extraData == null || extraData.isEmpty()) return map;
-        for (String pair : extraData.split(";")) {
-            int eq = pair.indexOf('=');
-            if (eq > 0) map.put(pair.substring(0, eq), pair.substring(eq + 1));
-        }
-        return map;
+        return new HashMap<>();
     }
 
-    @SuppressWarnings("deprecation")
     public static void apply(Entity entity, String extraData) {
-        Map<String, String> map = parse(extraData);
-        if (map.isEmpty()) return;
-
-        if (entity instanceof Ageable ageable) {
-            if ("true".equals(map.get("adult"))) ageable.setAdult();
-            else if (map.containsKey("age")) ageable.setAge(Integer.parseInt(map.get("age")));
-        }
-        if (entity instanceof Slime slime && map.containsKey("size")) {
-            slime.setSize(Integer.parseInt(map.get("size")));
-        }
-        if (entity instanceof Tameable tameable && map.containsKey("tamed")) {
-            tameable.setTamed("true".equals(map.get("tamed")));
-        }
-        if (entity instanceof Sittable sittable && map.containsKey("sitting")) {
-            sittable.setSitting("true".equals(map.get("sitting")));
-        }
-        if (entity instanceof Sheep sheep && map.containsKey("sheared")) {
-            sheep.setSheared("true".equals(map.get("sheared")));
-            if (map.containsKey("woolColor")) sheep.setColor(DyeColor.valueOf(map.get("woolColor")));
-        }
-        if (entity instanceof Pig pig && map.containsKey("saddle")) {
-            pig.setSaddle("true".equals(map.get("saddle")));
-        }
-        if (entity instanceof AbstractHorse horse) {
-            if (map.containsKey("domestication")) horse.setDomestication(Integer.parseInt(map.get("domestication")));
-            if (map.containsKey("jumpStrength")) horse.setJumpStrength(Double.parseDouble(map.get("jumpStrength")));
-        }
-        if (entity instanceof Horse horse) {
-            if (map.containsKey("horseColor")) horse.setColor(Horse.Color.valueOf(map.get("horseColor")));
-            if (map.containsKey("horseStyle")) horse.setStyle(Horse.Style.valueOf(map.get("horseStyle")));
-        }
-        if (entity instanceof Llama llama) {
-            if (map.containsKey("llamaColor")) llama.setColor(Llama.Color.valueOf(map.get("llamaColor")));
-            if (map.containsKey("strength")) llama.setStrength(Integer.parseInt(map.get("strength")));
-        }
-        if (entity instanceof Cat cat) {
-            if (map.containsKey("catType")) cat.setCatType(Cat.Type.valueOf(map.get("catType")));
-            if (map.containsKey("catColor")) cat.setCollarColor(DyeColor.valueOf(map.get("catColor")));
-        }
-        if (entity instanceof Wolf wolf) {
-            if (map.containsKey("collarColor")) wolf.setCollarColor(DyeColor.valueOf(map.get("collarColor")));
-            if (map.containsKey("angry")) wolf.setAngry("true".equals(map.get("angry")));
-        }
-        if (entity instanceof Fox fox && map.containsKey("foxType")) {
-            fox.setFoxType(Fox.Type.valueOf(map.get("foxType")));
-        }
-        if (entity instanceof Rabbit rabbit && map.containsKey("rabbitType")) {
-            rabbit.setRabbitType(Rabbit.Type.valueOf(map.get("rabbitType")));
-        }
-        if (entity instanceof Frog frog && map.containsKey("frogVariant")) {
-            org.bukkit.Registry.FROG_VARIANT.stream()
-                .filter(v -> v.getKey().toString().equals(map.get("frogVariant")))
-                .findFirst()
-                .ifPresent(frog::setVariant);
-        }
-        if (entity instanceof TropicalFish fish) {
-            if (map.containsKey("fishPattern")) fish.setPattern(TropicalFish.Pattern.valueOf(map.get("fishPattern")));
-            if (map.containsKey("fishBodyColor")) fish.setBodyColor(DyeColor.valueOf(map.get("fishBodyColor")));
-            if (map.containsKey("fishPatternColor")) fish.setPatternColor(DyeColor.valueOf(map.get("fishPatternColor")));
-        }
-        if (entity instanceof Creeper creeper && map.containsKey("powered")) {
-            creeper.setPowered("true".equals(map.get("powered")));
-        }
-        if (entity instanceof Zombie zombie && map.containsKey("baby")) {
-            zombie.setBaby("true".equals(map.get("baby")));
-        }
-        if (entity instanceof Villager villager) {
-            if (map.containsKey("villagerType")) villager.setVillagerType(Villager.Type.valueOf(map.get("villagerType")));
-            if (map.containsKey("villagerProfession")) villager.setProfession(Villager.Profession.valueOf(map.get("villagerProfession")));
-            if (map.containsKey("villagerLevel")) villager.setVillagerLevel(Integer.parseInt(map.get("villagerLevel")));
-        }
-        if (entity instanceof ZombieVillager zv && map.containsKey("zvProfession")) {
-            zv.setVillagerProfession(Villager.Profession.valueOf(map.get("zvProfession")));
-        }
-        if (entity instanceof MushroomCow mooshroom && map.containsKey("mushroomVariant")) {
-            mooshroom.setVariant(MushroomCow.Variant.valueOf(map.get("mushroomVariant")));
-        }
+        NBT.modify(entity, nbt -> {
+            nbt.mergeCompound(NBT.parseNBT(extraData));
+        });
     }
 }
