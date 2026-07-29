@@ -31,10 +31,22 @@ public class DistributedDimensions extends JavaPlugin {
         List<String> worldsList = getConfig().getStringList("worlds");
         if (worldsList != null && !worldsList.isEmpty()) {
             for (String w : worldsList) {
-                managedDimensions.add(Dimension.valueOf(w.toUpperCase()));
+                if (w == null || w.isBlank()) continue;
+                try {
+                    managedDimensions.add(Dimension.valueOf(w.trim().toUpperCase(java.util.Locale.ROOT)));
+                } catch (IllegalArgumentException ex) {
+                    getLogger().warning("[Config] Ignoring invalid dimension in 'worlds': " + w);
+                }
             }
-        } else {
-            managedDimensions.add(Dimension.valueOf(getConfig().getString("world", Dimension.OVERWORLD.name()).toUpperCase()));
+        }
+        if (managedDimensions.isEmpty()) {
+            String legacy = getConfig().getString("world", Dimension.OVERWORLD.name());
+            try {
+                managedDimensions.add(Dimension.valueOf(legacy.trim().toUpperCase(java.util.Locale.ROOT)));
+            } catch (IllegalArgumentException ex) {
+                getLogger().warning("[Config] Invalid 'world' value: " + legacy + ". Falling back to OVERWORLD.");
+                managedDimensions.add(Dimension.OVERWORLD);
+            }
         }
 
         dimensionSwitchService = new VelocityPluginMessageSwitchService(this);
