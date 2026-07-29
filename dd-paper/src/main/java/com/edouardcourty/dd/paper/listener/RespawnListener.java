@@ -3,6 +3,7 @@ package com.edouardcourty.dd.paper.listener;
 import com.edouardcourty.dd.common.model.Dimension;
 import com.edouardcourty.dd.common.model.LocationData;
 import com.edouardcourty.dd.common.service.DimensionSwitchService;
+import com.edouardcourty.dd.paper.util.DimensionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,31 +11,30 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Gère le respawn cross-serveur : un joueur qui meurt sur le Nether ou l'End
- * doit réapparaître sur l'Overworld, pas sur le serveur courant.
+ * Handles cross-server respawn: a player dying in the Nether or the End
+ * must respawn in the Overworld, not on the current server.
  *
- * Le point de respawn exact (lit/ancre) est inconnu depuis les serveurs Nether/End ;
- * le joueur est envoyé à (0, 64, 0) et {@link com.edouardcourty.dd.paper.portal.SafeLocationFinder}
- * se charge de trouver un sol sûr à destination.
+ * The exact respawn point (bed/anchor) is unknown from the Nether/End servers;
+ * the player is sent to (0, 64, 0) and {@link com.edouardcourty.dd.paper.portal.SafeLocationFinder}
+ * will take care of finding a safe ground at the destination.
  */
 public class RespawnListener implements Listener {
-    private final Dimension dimension;
     private final DimensionSwitchService dimensionSwitchService;
     private final JavaPlugin plugin;
 
-    public RespawnListener(Dimension dimension, DimensionSwitchService dimensionSwitchService, JavaPlugin plugin) {
-        this.dimension = dimension;
+    public RespawnListener(DimensionSwitchService dimensionSwitchService, JavaPlugin plugin) {
         this.dimensionSwitchService = dimensionSwitchService;
         this.plugin = plugin;
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
+        Dimension dimension = DimensionUtil.fromWorld(e.getPlayer().getWorld());
         if (dimension == Dimension.OVERWORLD) return;
 
-        // Récupère le point de respawn du joueur (lit/ancre de respawn).
-        // Même si le monde "world" n'existe pas sur ce serveur, les coordonnées sont dans le NBT du joueur.
-        // Si null (pas de lit posé ou invalide), on utilise le spawn par défaut du monde (0, 64, 0).
+        // Retrieve the player's respawn point (bed/respawn anchor).
+        // Even if the "world" world doesn't exist on this server, the coordinates are in the player's NBT.
+        // If null (no bed placed or invalid), we use the world's default spawn (0, 64, 0).
         org.bukkit.Location respawn = e.getPlayer().getRespawnLocation();
         LocationData dest = (respawn != null)
             ? LocationData.of(respawn.getX(), respawn.getY(), respawn.getZ(), respawn.getYaw(), respawn.getPitch())
@@ -45,7 +45,7 @@ public class RespawnListener implements Listener {
                 e.getPlayer().getUniqueId(),
                 Dimension.OVERWORLD,
                 dest,
-                false  // pas de portail au respawn
+                false  // no portal at respawn
             ), 1L
         );
     }

@@ -3,7 +3,7 @@ package com.edouardcourty.dd.paper.service;
 import com.edouardcourty.dd.common.model.Dimension;
 
 /**
- * Applique le ratio de coordonnées 1:8 entre l'Overworld et le Nether.
+ * Applies the 1:8 coordinate ratio between the Overworld and the Nether.
  */
 public final class NetherCoordinateScaler {
     private NetherCoordinateScaler() {}
@@ -11,13 +11,13 @@ public final class NetherCoordinateScaler {
     public record ScaledCoords(double x, double y, double z, Dimension target) {}
 
     /**
-     * Calcule les coordonnées de destination en appliquant le ratio Overworld↔Nether.
+     * Calculates the destination coordinates by applying the Overworld↔Nether ratio.
      *
-     * @param fromDim dimension source (doit être OVERWORLD ou NETHER)
-     * @param x       coordonnée X source
-     * @param y       coordonnée Y source
-     * @param z       coordonnée Z source
-     * @return coordonnées scalées et dimension cible
+     * @param fromDim source dimension (must be OVERWORLD or NETHER)
+     * @param x       source X coordinate
+     * @param y       source Y coordinate
+     * @param z       source Z coordinate
+     * @return scaled coordinates and target dimension
      */
     public static ScaledCoords scale(Dimension fromDim, double x, double y, double z) {
         return switch (fromDim) {

@@ -3,7 +3,7 @@ package com.edouardcourty.dd.velocity.util;
 import org.slf4j.Logger;
 
 /**
- * Wrapper autour du logger SLF4J qui filtre les messages debug selon la config.
+ * Wrapper around the SLF4J logger that filters debug messages according to the config.
  */
 public class DebugLogger {
     private final Logger logger;

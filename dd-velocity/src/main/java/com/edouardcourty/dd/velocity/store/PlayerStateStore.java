@@ -11,9 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Persiste l'état complet du dernier DIM_SWITCH de chaque joueur sur disque.
- * Les bytes sont écrits verbatim dans player-states/{uuid}.bin.
- * Chargé au démarrage du proxy, mis à jour après chaque switch réussi.
+ * Persists the full state of the last DIM_SWITCH of each player on disk.
+ * Bytes are written verbatim to player-states/{uuid}.bin.
+ * Loaded on proxy startup, updated after each successful switch.
  */
 public class PlayerStateStore {
     private final Path directory;

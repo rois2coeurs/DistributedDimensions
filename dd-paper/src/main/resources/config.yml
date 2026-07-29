@@ -1,3 +1,17 @@
-world: OVERWORLD # Can be either OVERWORLD, NETHER, or END
-debug: false     # Set to true to enable verbose debug logging
-transfer-data: true # Set to false to disable transferring player inventory, XP, health, etc.
+# ========================================================
+#             DistributedDimensions Configuration
+# ========================================================
+
+# List of dimensions managed by this specific server instance.
+# Valid values: OVERWORLD, NETHER, END
+# You can add multiple dimensions to run them on the same server.
+worlds:
+  - OVERWORLD
+
+# Enable verbose logging for debugging dimension switches and events.
+# Useful if you are encountering issues with portal routing.
+debug: false
+
+# Enable or disable data synchronization between servers.
+# If true, player inventory, XP, health, food, and gamemode will be transferred.
+transfer-data: true

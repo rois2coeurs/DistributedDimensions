@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Sérialise et désérialise l'état complet d'un joueur pour les switches cross-serveur.
+ * Serializes and deserializes the full state of a player for cross-server switches.
  *
- * Format du message (dans l'ordre) :
+ * Message format (in order):
  *   playerUUID (UTF), targetDimension (UTF),
  *   x/y/z (double), yaw/pitch (float),
  *   xpLevel (int), xpProgress (float),
@@ -30,7 +30,7 @@ import java.util.UUID;
  *   gameMode (UTF),
  *   inventory contents, armor contents, offhand item
  *
- * Format d'un item : int length (0 = vide/AIR), puis bytes si non vide.
+ * Item format: int length (0 = empty/AIR), then bytes if not empty.
  */
 public class PlayerStateSerializer {
 
@@ -51,7 +51,7 @@ public class PlayerStateSerializer {
         ItemStack[] inventoryContents,
         ItemStack[] armorContents,
         ItemStack offhand,
-        EntityTransferSerializer.EntityData vehicle,  // null si le joueur n'est pas dans un véhicule
+        EntityTransferSerializer.EntityData vehicle,  // null if the player is not in a vehicle
         List<PotionEffect> potionEffects
     ) {}
 
@@ -79,7 +79,7 @@ public class PlayerStateSerializer {
             writeItemArray(out, inv.getArmorContents());
             writeItem(out, inv.getItemInOffHand());
 
-            // Effets de potion
+            // Potion effects
             Collection<PotionEffect> effects = player.getActivePotionEffects();
             out.writeInt(effects.size());
             for (PotionEffect effect : effects) {
@@ -91,7 +91,7 @@ public class PlayerStateSerializer {
                 out.writeBoolean(effect.hasIcon());
             }
 
-            // Véhicule optionnel
+            // Optional vehicle
             org.bukkit.entity.Entity vehicle = player.getVehicle();
             if (vehicle != null) {
                 out.writeBoolean(true);
@@ -131,7 +131,7 @@ public class PlayerStateSerializer {
         ItemStack[] armor     = readItemArray(in);
         ItemStack offhand     = readItem(in);
 
-        // Effets de potion
+        // Potion effects
         int effectCount = in.readInt();
         List<PotionEffect> potionEffects = new ArrayList<>(effectCount);
         for (int i = 0; i < effectCount; i++) {
@@ -144,7 +144,7 @@ public class PlayerStateSerializer {
             if (type != null) potionEffects.add(new PotionEffect(type, duration, amplifier, ambient, particles, icon));
         }
 
-        // Véhicule optionnel
+        // Optional vehicle
         EntityTransferSerializer.EntityData vehicle = in.readBoolean()
             ? EntityTransferSerializer.readRoot(in)
             : null;

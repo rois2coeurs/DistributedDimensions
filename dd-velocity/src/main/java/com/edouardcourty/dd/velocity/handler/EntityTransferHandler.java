@@ -14,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Transfère un message ENTITY_TRANSFER vers le serveur de la dimension cible.
+ * Transfers an ENTITY_TRANSFER message to the target dimension server.
  *
- * Comme targetServer.sendPluginMessage() exige un joueur sur le serveur cible,
- * on queue les messages et on les livre dès qu'un joueur se connecte au serveur
+ * Since targetServer.sendPluginMessage() requires a player on the target server,
+ * we queue messages and deliver them as soon as a player connects to the server
  * (via {@link #deliverPending}).
  */
 public class EntityTransferHandler {
@@ -57,7 +57,7 @@ public class EntityTransferHandler {
         }
     }
 
-    /** Appelé quand un joueur arrive sur un serveur — livre les entités en attente. */
+    /** Called when a player arrives on a server — delivers pending entities. */
     public void deliverPending(RegisteredServer targetServer) {
         Queue<byte[]> pending = pendingTransfers.get(targetServer.getServerInfo().getName());
         if (pending == null) return;

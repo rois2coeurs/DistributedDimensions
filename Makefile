@@ -22,7 +22,7 @@ release:
 	@mkdir -p release
 	cp $(PAPER_JAR) release/
 	cp $(VELOCITY_JAR) release/
-	@echo "JARs disponibles dans release/ :"
+	@echo "JARs available in release/ :"
 	@ls -1 release/
 
 

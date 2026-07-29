@@ -12,8 +12,8 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Reçoit un message ENTITY_TRANSFER envoyé par Velocity et spawne l'entité
- * (ainsi que ses passagers récursivement) dans le bon monde.
+ * Receives an ENTITY_TRANSFER message sent by Velocity and spawns the entity
+ * (along with its passengers recursively) in the correct world.
  */
 public class EntitySpawnListener implements PluginMessageListener {
     private final JavaPlugin plugin;
@@ -35,17 +35,17 @@ public class EntitySpawnListener implements PluginMessageListener {
             return;
         }
 
-        // Chercher le portail le plus proche ou une position sûre
+        // Find the nearest portal or a safe location
         Location spawnLoc;
         if (data.targetDimension() == com.edouardcourty.dd.common.model.Dimension.END) {
-            // Reconstruire la plateforme vanilla comme pour les joueurs
+            // Rebuild vanilla platform just like for players
             spawnLoc = com.edouardcourty.dd.paper.portal.PortalBuilder.buildEndPlatform(
                 world, (int) data.destX(), (int) data.destY(), (int) data.destZ());
         } else {
             spawnLoc = SafeLocationFinder.findEntityArrival(world, data.destX(), data.destY(), data.destZ());
         }
         Entity spawned = EntityTransferSerializer.spawn(world, spawnLoc, data);
-        // Marquer l'entité (et ses passagers) comme récemment transférée pour éviter re-trigger immédiat
+        // Mark the entity (and its passengers) as recently transferred to avoid immediate re-trigger
         markTransferred(spawned);
     }
 

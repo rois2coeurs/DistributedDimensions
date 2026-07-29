@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 /**
- * Reçoit dd:switch_failed de Velocity quand le serveur cible est inaccessible.
- * Remet le joueur à sa position d'avant le portail via {@link PrePortalPositionStore}.
+ * Receives dd:switch_failed from Velocity when the target server is unreachable.
+ * Returns the player to their pre-portal position via {@link PrePortalPositionStore}.
  */
 public class SwitchFailedListener implements PluginMessageListener {
     private final JavaPlugin plugin;

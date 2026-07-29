@@ -5,6 +5,7 @@ import com.edouardcourty.dd.common.model.Dimension;
 import com.edouardcourty.dd.common.model.PortalConstants;
 import com.edouardcourty.dd.paper.messaging.EntityTransferSerializer;
 import com.edouardcourty.dd.paper.service.NetherCoordinateScaler;
+import com.edouardcourty.dd.paper.util.DimensionUtil;
 import com.google.common.io.ByteStreams;
 import io.papermc.paper.event.entity.EntityInsideBlockEvent;
 import org.bukkit.Material;
@@ -21,18 +22,17 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Transfère les entités non-joueur (mobs, items, minecarts...) vers le serveur
- * de la dimension cible.
+ * Transfers non-player entities (mobs, items, minecarts...) to the target
+ * dimension's server.
  *
- * - Portail Nether : via EntityPortalEvent (OVERWORLD ↔ NETHER, échelle 1:8)
- * - Portail End    : via EntityInsideBlockEvent sur END_PORTAL (car vanilla ne
- *   déclenche pas EntityPortalEvent pour les non-joueurs dans les portails End)
+ * - Nether Portal: via EntityPortalEvent (OVERWORLD ↔ NETHER, 1:8 scale)
+ * - End Portal   : via EntityInsideBlockEvent on END_PORTAL (since vanilla does
+ *   not trigger EntityPortalEvent for non-players in End portals)
  */
 public class EntityPortalListener implements Listener {
-    private final Dimension dimension;
     private final JavaPlugin plugin;
 
-    /** UUIDs d'entités récemment spawned via transfer — ignorés pendant 15s pour éviter re-trigger. */
+    /** UUIDs of recently transferred entities — ignored for 15s to prevent immediate re-trigger. */
     private static final Map<UUID, Long> RECENTLY_TRANSFERRED = new ConcurrentHashMap<>();
     private static final long TRANSFER_GRACE_MS = PortalConstants.PORTAL_COOLDOWN_TICKS * 50L; // ticks → ms
 
@@ -40,18 +40,19 @@ public class EntityPortalListener implements Listener {
         RECENTLY_TRANSFERRED.put(uuid, System.currentTimeMillis());
     }
 
-    public EntityPortalListener(Dimension dimension, JavaPlugin plugin) {
-        this.dimension = dimension;
+    public EntityPortalListener(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
-    // ── Portail Nether (EntityPortalEvent) ────────────────────────────────────
+    // ── Nether Portal (EntityPortalEvent) ────────────────────────────────────
 
     @EventHandler
     public void onEntityPortal(EntityPortalEvent e) {
         Entity entity = e.getEntity();
         if (entity instanceof Player) return;
-        if (dimension == Dimension.END) return; // pas de portail nether dans l'End vanilla
+        
+        Dimension dimension = DimensionUtil.fromWorld(e.getFrom().getWorld());
+        if (dimension == Dimension.END) return; // no nether portal in vanilla End
 
         if (isRecentlyTransferred(entity)) { e.setCancelled(true); return; }
 
@@ -64,19 +65,20 @@ public class EntityPortalListener implements Listener {
         sendTransfer(entity, dest.target(), dest.x(), dest.y(), dest.z());
     }
 
-    // ── Portail End (EntityInsideBlockEvent) ──────────────────────────────────
-    // Paper ne déclenche pas EntityPortalEvent pour les non-joueurs dans les portails End.
-    // On utilise EntityInsideBlockEvent pour détecter le contact avec END_PORTAL / END_GATEWAY.
+    // ── End Portal (EntityInsideBlockEvent) ──────────────────────────────────
+    // Paper does not trigger EntityPortalEvent for non-players in End portals.
+    // We use EntityInsideBlockEvent to detect contact with END_PORTAL / END_GATEWAY.
 
     @EventHandler
     public void onEntityInsideBlock(EntityInsideBlockEvent e) {
         Material type = e.getBlock().getType();
         if (type != Material.END_PORTAL && type != Material.END_GATEWAY) return;
         Entity entity = e.getEntity();
-        if (entity instanceof Player) return; // géré par EndPortalListener
+        if (entity instanceof Player) return; // handled by EndPortalListener
 
         if (isRecentlyTransferred(entity)) return;
 
+        Dimension dimension = DimensionUtil.fromWorld(e.getBlock().getWorld());
         Dimension target;
         double destX, destY, destZ;
 
@@ -87,12 +89,12 @@ public class EntityPortalListener implements Listener {
                 destY = PortalConstants.END_PLATFORM_Y;
                 destZ = PortalConstants.END_PLATFORM_Z;
             } else if (dimension == Dimension.END) {
-                // End → Overworld via portail de sortie (à l'origine 0,0,0 de l'End)
+                // End → Overworld via exit portal (at origin 0,0,0 of the End)
                 target = Dimension.OVERWORLD;
                 destX = 0; destY = 64; destZ = 0;
             } else return;
         } else {
-            // END_GATEWAY : non géré pour l'instant
+            // END_GATEWAY : not handled yet
             return;
         }
 

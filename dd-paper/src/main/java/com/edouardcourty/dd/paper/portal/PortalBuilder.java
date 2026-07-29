@@ -7,25 +7,25 @@ import org.bukkit.World;
 import org.bukkit.block.data.Orientable;
 
 /**
- * Construit un portail du Nether style vanilla.
+ * Builds a vanilla-style Nether portal.
  *
- * Deux variantes :
- * - {@link #buildOnGround} : cadre 4×5 posé sur un sol existant (pas de plateforme)
- * - {@link #buildWithPlatform} : cadre 4×5 + plateforme obsidienne 1×2 de chaque côté,
- *   utilisé quand il n'y a pas de terrain en dessous (vide, lave...)
+ * Two variants:
+ * - {@link #buildOnGround} : 4×5 frame placed on an existing ground (no platform)
+ * - {@link #buildWithPlatform} : 4×5 frame + 1×2 obsidian platform on each side,
+ *   used when there is no terrain below (void, lava...)
  *
- * Structure du cadre :
- *   - Obsidienne bas/haut (4 blocs) + montants gauche/droite (5 blocs)
- *   - 6 blocs NETHER_PORTAL à l'intérieur (2 colonnes × 3 rangées, axe X)
+ * Frame structure:
+ *   - Obsidian bottom/top (4 blocks) + left/right pillars (5 blocks)
+ *   - 6 NETHER_PORTAL blocks inside (2 columns × 3 rows, X axis)
  *
- * Le joueur est téléporté au centre-bas de l'intérieur du portail.
+ * The player is teleported to the bottom center of the inside of the portal.
  */
 public class PortalBuilder {
 
     private PortalBuilder() {}
 
     /**
-     * Construit le portail sur un sol existant (baseY = Y du sol, le portail part de baseY+1).
+     * Builds the portal on an existing ground (baseY = ground Y, the portal starts at baseY+1).
      */
     public static Location buildOnGround(World world, int ix, int baseY, int iz, float yaw, float pitch) {
         buildFrame(world, ix, baseY + 1, iz);
@@ -33,14 +33,14 @@ public class PortalBuilder {
     }
 
     /**
-     * Construit le portail avec une plateforme d'obsidienne de chaque côté,
-     * quand il n'y a pas de sol disponible (vide, lave...).
-     * La plateforme est placée à baseY, le cadre part de baseY.
+     * Builds the portal with an obsidian platform on each side,
+     * when there is no ground available (void, lava...).
+     * The platform is placed at baseY, the frame starts at baseY.
      */
     public static Location buildWithPlatform(World world, int ix, int iz, float yaw, float pitch) {
         int baseY = Math.max(world.getMinHeight() + 5, Math.min(64, world.getMaxHeight() - 10));
 
-        // Plateforme : 1×2 de chaque côté du cadre, à la même hauteur que le bas du cadre
+        // Platform: 1×2 on each side of the frame, at the same height as the bottom of the frame
         world.getBlockAt(ix - 1, baseY, iz    ).setType(Material.OBSIDIAN);
         world.getBlockAt(ix - 1, baseY, iz + 1).setType(Material.OBSIDIAN);
         world.getBlockAt(ix + 4, baseY, iz    ).setType(Material.OBSIDIAN);
@@ -51,15 +51,15 @@ public class PortalBuilder {
     }
 
     /**
-     * Construit (ou régénère) la plateforme d'arrivée de l'End vanilla : 5×5 obsidienne à (x-2, y, z-2).
-     * Appelé systématiquement à chaque arrivée dans l'End pour reproduire le comportement vanilla
-     * (la plateforme est toujours reconstruite, même si elle a été détruite).
+     * Builds (or regenerates) the vanilla End arrival platform: 5×5 obsidian at (x-2, y, z-2).
+     * Called systematically at each arrival in the End to reproduce vanilla behavior
+     * (the platform is always rebuilt, even if it was destroyed).
      */
     public static Location buildEndPlatform(World world, int x, int y, int z) {
         for (int dx = -2; dx <= 2; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
                 world.getBlockAt(x + dx, y, z + dz).setType(Material.OBSIDIAN);
-                // Vider les 3 blocs d'air au-dessus
+                // Empty the 3 blocks of air above
                 for (int dy = 1; dy <= 3; dy++) {
                     world.getBlockAt(x + dx, y + dy, z + dz).setType(Material.AIR);
                 }
@@ -69,7 +69,7 @@ public class PortalBuilder {
     }
 
     private static void buildFrame(World world, int ix, int baseY, int iz) {
-        // Cadre obsidienne 4×5
+        // 4×5 Obsidian frame
         for (int px = ix; px <= ix + 3; px++) {
             world.getBlockAt(px, baseY,     iz).setType(Material.OBSIDIAN);
             world.getBlockAt(px, baseY + 4, iz).setType(Material.OBSIDIAN);
@@ -79,7 +79,7 @@ public class PortalBuilder {
             world.getBlockAt(ix + 3, py, iz).setType(Material.OBSIDIAN);
         }
 
-        // Blocs portail 2×3 à l'intérieur (axe X)
+        // 2×3 portal blocks inside (X axis)
         Orientable portalData = (Orientable) Material.NETHER_PORTAL.createBlockData();
         portalData.setAxis(Axis.X);
         for (int py = baseY + 1; py <= baseY + 3; py++) {

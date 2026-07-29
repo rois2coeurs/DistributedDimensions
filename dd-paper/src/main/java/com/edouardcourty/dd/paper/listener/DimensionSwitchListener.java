@@ -31,7 +31,7 @@ public class DimensionSwitchListener implements PluginMessageListener {
 
         PlayerStateSerializer.PlayerState state = PlayerStateSerializer.read(ByteStreams.newDataInput(bytes));
 
-        // Restoration : appliquer état sans téléporter ni construire de portail
+        // Restoration: apply state without teleporting or building a portal
         if (isRestore) {
             positionStore.clear(state.playerUuid());
             applyState(player, state);
@@ -46,7 +46,7 @@ public class DimensionSwitchListener implements PluginMessageListener {
 
         Location target;
         if (state.targetDimension() == com.edouardcourty.dd.common.model.Dimension.END && !state.buildPortal()) {
-            // Arrivée dans l'End : toujours reconstruire la plateforme vanilla à (100, 49, 0)
+            // Arrival in the End: always rebuild the vanilla platform at (100, 49, 0)
             target = com.edouardcourty.dd.paper.portal.PortalBuilder.buildEndPlatform(
                 world,
                 (int) state.location().x,
@@ -59,7 +59,7 @@ public class DimensionSwitchListener implements PluginMessageListener {
                 state.location().x, state.location().y, state.location().z,
                 state.location().yaw, state.location().pitch);
         } else {
-            // Pour un respawn (mort cross-serveur) : utiliser le point de respawn connu de CE serveur
+            // For a respawn (cross-server death): use the known respawn point for THIS server
             Location respawn = player.getRespawnLocation();
             if (respawn != null && world.equals(respawn.getWorld())) {
                 target = respawn;
@@ -77,7 +77,7 @@ public class DimensionSwitchListener implements PluginMessageListener {
         positionStore.clear(state.playerUuid());
         applyState(player, state);
 
-        // Remonter le joueur dans son véhicule si applicable
+        // Mount the player back in their vehicle if applicable
         if (state.vehicle() != null) {
             final Location spawnLoc = target;
             final Player p = player;

@@ -16,9 +16,9 @@ public class ChatBroadcastHandler {
 
     @Subscribe
     public void onPlayerChat(PlayerChatEvent event) {
-        // Depuis Minecraft 1.19.1, les messages sont signés et ne peuvent pas être annulés par le proxy.
-        // On laisse l'événement passer (le backend diffuse le message aux joueurs du même serveur),
-        // et on le relaie manuellement aux joueurs connectés sur les AUTRES serveurs.
+        // Since Minecraft 1.19.1, messages are signed and cannot be cancelled by the proxy.
+        // We let the event pass (the backend broadcasts the message to players on the same server),
+        // and we manually relay it to players connected to OTHER servers.
         RegisteredServer currentServer = event.getPlayer().getCurrentServer()
                 .map(ServerConnection::getServer)
                 .orElse(null);

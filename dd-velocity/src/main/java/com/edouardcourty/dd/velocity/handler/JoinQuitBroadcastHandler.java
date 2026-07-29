@@ -12,10 +12,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 /**
- * Broadcaste les vrais join/quit sur tous les serveurs Paper via dd:player_broadcast.
- * - Join : ServerPostConnectEvent sans serveur précédent (première connexion au proxy)
- * - Quit : DisconnectEvent (déconnexion complète du proxy)
- * Ces événements ne se déclenchent PAS lors des switches de dimension.
+ * Broadcasts real join/quit messages to all Paper servers via dd:player_broadcast.
+ * - Join : ServerPostConnectEvent without previous server (first proxy connection)
+ * - Quit : DisconnectEvent (full disconnect from proxy)
+ * These events DO NOT trigger during dimension switches.
  */
 public class JoinQuitBroadcastHandler {
     private final ProxyServer server;
