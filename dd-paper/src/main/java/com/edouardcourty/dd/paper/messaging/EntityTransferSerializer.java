@@ -14,19 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sérialise/désérialise une entité non-joueur pour le transfert cross-serveur.
+ * Serializes/deserializes a non-player entity for cross-server transfer.
  *
- * Format (récursif pour les passagers) :
+ * Format (recursive for passengers):
  *   targetDimension (UTF), destX/Y/Z (double)
- *   entityType (UTF), vx/vy/vz (double), customName (UTF, "null" si absent), fireTicks (int)
+ *   entityType (UTF), vx/vy/vz (double), customName (UTF, "null" if absent), fireTicks (int)
  *   hasItemData (boolean) → [itemBytes.length (int) + bytes]
- *   health (float, -1 si non-LivingEntity), maxHealth (float)
+ *   health (float, -1 if non-LivingEntity), maxHealth (float)
  *   hasChestInventory (boolean) → [item array]
- *   extraData (UTF, clés=valeur séparées par ';') — couleur, âge, taille, etc.
- *   passengerCount (int) → [passengers récursifs sans dimension/dest]
+ *   extraData (UTF, key=value separated by ';') — color, age, size, etc.
+ *   passengerCount (int) → [recursive passengers without dimension/dest]
  *
  * Spawn : {@link EntitySpawner}
- * Attributs spécifiques : {@link EntityExtraDataCodec}
+ * Specific attributes : {@link EntityExtraDataCodec}
  */
 public class EntityTransferSerializer {
 
@@ -47,7 +47,7 @@ public class EntityTransferSerializer {
         List<EntityData> passengers
     ) {}
 
-    // ── Écriture ─────────────────────────────────────────────────────────────
+    // ── Write ─────────────────────────────────────────────────────────────
 
     public static void writeRoot(ByteArrayDataOutput out, Entity entity, Dimension target, double destX, double destY, double destZ) {
         out.writeUTF(target.name());
@@ -102,7 +102,7 @@ public class EntityTransferSerializer {
         for (Entity passenger : passengers) writeEntity(out, passenger);
     }
 
-    // ── Lecture ───────────────────────────────────────────────────────────────
+    // ── Read ───────────────────────────────────────────────────────────────
 
     public static EntityData readRoot(ByteArrayDataInput in) {
         Dimension target = Dimension.valueOf(in.readUTF());
@@ -145,7 +145,7 @@ public class EntityTransferSerializer {
             fireTicks, itemData, health, maxHealth, chestContents, extraData, passengers);
     }
 
-    // ── Spawn (délégué à EntitySpawner) ──────────────────────────────────────
+    // ── Spawn (delegated to EntitySpawner) ──────────────────────────────────────
 
     public static Entity spawn(World world, Location loc, EntityData data) {
         return EntitySpawner.spawn(world, loc, data);

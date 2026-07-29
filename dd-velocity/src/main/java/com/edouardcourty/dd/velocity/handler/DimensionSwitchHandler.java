@@ -32,7 +32,7 @@ public class DimensionSwitchHandler {
         UUID playerUuid = UUID.fromString(in.readUTF());
         String dimensionKey = in.readUTF().toLowerCase();
         String targetServerName = serverNames.getOrDefault(dimensionKey, dimensionKey);
-        // les autres champs restent dans event.getData() pour le forward
+        // the other fields remain in event.getData() for the forward
 
         Player player = server.getPlayer(playerUuid).orElse(null);
         if (player == null) return;

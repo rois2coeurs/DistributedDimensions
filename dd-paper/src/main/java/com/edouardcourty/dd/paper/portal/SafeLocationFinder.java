@@ -9,17 +9,17 @@ import org.bukkit.block.data.Orientable;
 import java.util.Set;
 
 /**
- * Trouve un emplacement de téléportation sûr à partir des coordonnées données.
+ * Finds a safe teleport location from the given coordinates.
  *
- * Deux modes :
- * - {@link #findAndBuildPortal} : cherche d'abord un portail existant dans un rayon,
- *   sinon trouve un sol valide et construit un portail, sinon construit avec plateforme.
- * - {@link #findOnly} : retourne juste un emplacement sûr, sans construire (respawn).
+ * Two modes:
+ * - {@link #findAndBuildPortal} : first looks for an existing portal in a radius,
+ *   otherwise finds valid ground and builds a portal, otherwise builds with a platform.
+ * - {@link #findOnly} : returns just a safe location, without building (respawn).
  *
- * "Sûr" = sol solide + 2 blocs d'air pur au-dessus (pas de lave, feu, eau...).
- * Dans le Nether, la recherche est plafonnée à Y={@value #NETHER_MAX_Y} pour éviter le toit.
- * Si aucun sol n'est trouvé dans la colonne de départ, la recherche s'élargit en spirale
- * jusqu'à {@value #MAX_SEARCH_RADIUS} blocs.
+ * "Safe" = solid ground + 2 blocks of pure air above (no lava, fire, water...).
+ * In the Nether, the search is capped at Y={@value #NETHER_MAX_Y} to avoid the roof.
+ * If no ground is found in the starting column, the search expands in a spiral
+ * up to {@value #MAX_SEARCH_RADIUS} blocks.
  */
 public class SafeLocationFinder {
 
@@ -33,22 +33,22 @@ public class SafeLocationFinder {
     private SafeLocationFinder() {}
 
     /**
-     * Trouve un sol sûr ET construit un portail dessus.
-     * Vérifie d'abord si un portail existant est proche — si oui, le réutilise.
-     * Vérifie que l'espace 4×5 du portail est libre (intérieur 2×3 en air pur, cadre sans bédrock).
-     * Si aucun emplacement valide trouvé après spirale : construit un portail avec plateforme.
+     * Finds a safe ground AND builds a portal on it.
+     * First checks if an existing portal is nearby — if yes, reuses it.
+     * Checks that the 4×5 space of the portal is free (2×3 inside is pure air, frame without bedrock).
+     * If no valid location found after spiral: builds a portal with platform.
      */
     public static Location findAndBuildPortal(World world, double x, double y, double z, float yaw, float pitch) {
         int ix = (int) Math.floor(x);
         int iz = (int) Math.floor(z);
         int maxY = getMaxSafeY(world);
 
-        // 1. Chercher un portail existant à proximité (128 blocs dans l'Overworld, 16 dans le Nether)
+        // 1. Look for an existing portal nearby (128 blocks in the Overworld, 16 in the Nether)
         int searchRadius = world.getEnvironment() == World.Environment.NETHER ? 16 : 128;
         Location existing = findExistingPortal(world, ix, iz, searchRadius, maxY, yaw, pitch);
         if (existing != null) return existing;
 
-        // 2. Trouver un sol valide et construire un nouveau portail
+        // 2. Find a valid ground and build a new portal
         for (int[] offset : spiral(MAX_SEARCH_RADIUS)) {
             int cx = ix + offset[0];
             int cz = iz + offset[1];
@@ -58,13 +58,13 @@ public class SafeLocationFinder {
             }
         }
 
-        // 3. Fallback : construire avec plateforme
+        // 3. Fallback: build with platform
         return PortalBuilder.buildWithPlatform(world, ix, iz, yaw, pitch);
     }
 
     /**
-     * Trouve l'arrivée pour une entité non-joueur : cherche d'abord un portail existant,
-     * sinon un sol sûr. Ne construit rien.
+     * Finds the arrival for a non-player entity: looks for an existing portal first,
+     * otherwise a safe ground. Does not build anything.
      */
     public static Location findEntityArrival(World world, double x, double y, double z) {
         int ix = (int) Math.floor(x);
@@ -79,8 +79,8 @@ public class SafeLocationFinder {
     }
 
     /**
-     * Trouve un sol sûr sans construire quoi que ce soit (ex : respawn).
-     * Fallback : Y+1 aux coordonnées données.
+     * Finds a safe ground without building anything (e.g. respawn).
+     * Fallback: Y+1 at the given coordinates.
      */
     public static Location findOnly(World world, double x, double y, double z, float yaw, float pitch) {
         int ix = (int) Math.floor(x);
@@ -99,7 +99,7 @@ public class SafeLocationFinder {
         return new Location(world, ix + 0.5, y + 1, iz + 0.5, yaw, pitch);
     }
 
-    // Cherche un bloc NETHER_PORTAL existant dans un rayon en spirale, retourne l'intérieur bas du portail
+    // Looks for an existing NETHER_PORTAL block in a spiral radius, returns the bottom inside of the portal
     private static Location findExistingPortal(World world, int ix, int iz, int radius, int maxY, float yaw, float pitch) {
         for (int[] offset : spiral(radius)) {
             int cx = ix + offset[0];
@@ -113,39 +113,39 @@ public class SafeLocationFinder {
         return null;
     }
 
-    // À partir d'un bloc NETHER_PORTAL trouvé, retourne la position de spawn à l'EXTÉRIEUR du cadre
+    // From a found NETHER_PORTAL block, returns the spawn position OUTSIDE the frame
     private static Location portalSpawnLocation(World world, int px, int py, int pz, float yaw, float pitch) {
-        // Descendre au bas du portail
+        // Go down to the bottom of the portal
         while (py > world.getMinHeight() + 1 && world.getBlockAt(px, py - 1, pz).getType() == Material.NETHER_PORTAL) {
             py--;
         }
-        // Placer l'entité à l'extérieur du portail selon son axe
+        // Place the entity outside the portal according to its axis
         var blockData = world.getBlockAt(px, py, pz).getBlockData();
         if (blockData instanceof Orientable orientable && orientable.getAxis() == Axis.X) {
-            // Portail orienté X (faces sur Z) : sortir côté -Z ou +Z
+            // X oriented portal (faces on Z): exit on -Z or +Z side
             while (world.getBlockAt(px - 1, py, pz).getType() == Material.NETHER_PORTAL) px--;
-            // Trouver la largeur du portail en X pour centrer
+            // Find the width of the portal on X to center
             int maxPx = px;
             while (world.getBlockAt(maxPx + 1, py, pz).getType() == Material.NETHER_PORTAL) maxPx++;
             double centerX = (px + maxPx) / 2.0 + 0.5;
-            // Sortir côté -Z si possible, sinon +Z
+            // Exit on -Z side if possible, otherwise +Z
             double exitZ = SAFE_AIR.contains(world.getBlockAt(px, py, pz - 1).getType())
                 ? pz - 0.5 : pz + 1.5;
             return new Location(world, centerX, py, exitZ, yaw, pitch);
         } else {
-            // Portail orienté Z (faces sur X) : sortir côté -X ou +X
+            // Z oriented portal (faces on X): exit on -X or +X side
             while (world.getBlockAt(px, py, pz - 1).getType() == Material.NETHER_PORTAL) pz--;
             int maxPz = pz;
             while (world.getBlockAt(px, py, maxPz + 1).getType() == Material.NETHER_PORTAL) maxPz++;
             double centerZ = (pz + maxPz) / 2.0 + 0.5;
-            // Sortir côté -X si possible, sinon +X
+            // Exit on -X side if possible, otherwise +X
             double exitX = SAFE_AIR.contains(world.getBlockAt(px - 1, py, pz).getType())
                 ? px - 0.5 : px + 1.5;
             return new Location(world, exitX, py, centerZ, yaw, pitch);
         }
     }
 
-    // Retourne le Y du sol sûr en cherchant depuis le haut vers le bas (priorité à la surface)
+    // Returns the safe ground Y by searching from top to bottom (priority to the surface)
     private static Integer findSafeY(World world, int ix, int iz, int maxY) {
         for (int iy = maxY - 2; iy >= world.getMinHeight() + 1; iy--) {
             if (world.getBlockAt(ix, iy, iz).getType().isSolid()
@@ -158,13 +158,13 @@ public class SafeLocationFinder {
     }
 
     /**
-     * Vérifie qu'un portail 4×5 peut être construit proprement à (ix, frameBaseY, iz) :
-     * - L'intérieur 2×3 (ix+1..ix+2, frameBaseY+1..frameBaseY+3) doit être en air pur
-     * - Les positions du cadre ne doivent pas être de la bédrock (indestructible)
-     * - La colonne au-dessus du cadre (frameBaseY+5) doit avoir de la place (pas de bédrock)
+     * Checks that a 4×5 portal can be built cleanly at (ix, frameBaseY, iz):
+     * - The 2×3 inside (ix+1..ix+2, frameBaseY+1..frameBaseY+3) must be pure air
+     * - The frame positions must not be bedrock (indestructible)
+     * - The column above the frame (frameBaseY+5) must have space (no bedrock)
      */
     private static boolean hasPortalSpace(World world, int ix, int frameBaseY, int iz) {
-        // Intérieur 2×3 doit être de l'air pur
+        // 2x3 inside must be pure air
         for (int dx = 1; dx <= 2; dx++) {
             for (int dy = 1; dy <= 3; dy++) {
                 if (!SAFE_AIR.contains(world.getBlockAt(ix + dx, frameBaseY + dy, iz).getType())) {
@@ -172,7 +172,7 @@ public class SafeLocationFinder {
                 }
             }
         }
-        // Le cadre (4×5) ne doit pas contenir de bédrock
+        // The frame (4x5) must not contain bedrock
         for (int dx = 0; dx <= 3; dx++) {
             if (world.getBlockAt(ix + dx, frameBaseY,     iz).getType() == Material.BEDROCK) return false;
             if (world.getBlockAt(ix + dx, frameBaseY + 4, iz).getType() == Material.BEDROCK) return false;
@@ -184,13 +184,13 @@ public class SafeLocationFinder {
         return true;
     }
 
-    // Y maximum de spawn selon l'environnement (cap Nether à 115 pour éviter le toit)
+    // Maximum spawn Y according to the environment (Nether capped at 115 to avoid the roof)
     private static int getMaxSafeY(World world) {
         if (world.getEnvironment() == World.Environment.NETHER) return NETHER_MAX_Y;
         return world.getMaxHeight() - 2;
     }
 
-    // Génère les offsets (dx, dz) en spirale carrée : (0,0), puis périmètre à r=1, r=2...
+    // Generates offsets (dx, dz) in a square spiral: (0,0), then perimeter at r=1, r=2...
     private static int[][] spiral(int maxRadius) {
         int size = (2 * maxRadius + 1) * (2 * maxRadius + 1);
         int[][] offsets = new int[size][2];

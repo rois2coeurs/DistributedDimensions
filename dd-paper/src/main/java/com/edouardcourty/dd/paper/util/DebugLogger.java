@@ -3,7 +3,7 @@ package com.edouardcourty.dd.paper.util;
 import java.util.logging.Logger;
 
 /**
- * Wrapper autour du logger plugin qui filtre les messages debug selon la config.
+ * Wrapper around the plugin logger that filters debug messages according to the config.
  */
 public class DebugLogger {
     private final Logger logger;

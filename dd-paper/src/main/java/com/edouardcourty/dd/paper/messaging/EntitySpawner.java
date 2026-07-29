@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 
 /**
- * Instancie les entités reçues via un transfert cross-serveur.
+ * Spawns entities received via a cross-server transfer.
  */
 public final class EntitySpawner {
     private EntitySpawner() {}
@@ -19,7 +19,7 @@ public final class EntitySpawner {
     public static Entity spawn(World world, Location loc, EntityTransferSerializer.EntityData data) {
         EntityType type = EntityType.valueOf(data.entityType());
 
-        // Les blocs en chute deviennent des items droppés à l'arrivée (comportement vanilla)
+        // Falling blocks become dropped items on arrival (vanilla behavior)
         if (type == EntityType.FALLING_BLOCK) {
             Map<String, String> extra = EntityExtraDataCodec.parse(data.extraData());
             String blockTypeStr = extra.get("fallingBlockType");

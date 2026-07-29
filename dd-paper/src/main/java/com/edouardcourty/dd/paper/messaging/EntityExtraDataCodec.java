@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Sérialise et désérialise les attributs spécifiques d'une entité sous forme de chaîne "key=val;...".
+ * Serializes and deserializes specific entity attributes as a "key=val;..." string.
  */
 public final class EntityExtraDataCodec {
     private EntityExtraDataCodec() {}

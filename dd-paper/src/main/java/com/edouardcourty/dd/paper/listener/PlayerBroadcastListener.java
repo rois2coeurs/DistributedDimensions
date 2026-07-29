@@ -14,11 +14,11 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Côté Paper :
- * - Supprime les messages join/quit par défaut (générés à chaque connect/disconnect Paper,
- *   y compris lors des switches de dimension).
- * - Reçoit dd:player_broadcast de Velocity et les affiche aux joueurs en ligne.
- *   Seul Velocity émet les vrais messages join/quit (PostLoginEvent / DisconnectEvent proxy).
+ * Paper side:
+ * - Removes default join/quit messages (generated on every Paper connect/disconnect,
+ *   including during dimension switches).
+ * - Receives dd:player_broadcast from Velocity and broadcasts them to online players.
+ *   Only Velocity emits the real join/quit messages (proxy PostLoginEvent / DisconnectEvent).
  */
 public class PlayerBroadcastListener implements Listener, PluginMessageListener {
     private final JavaPlugin plugin;
@@ -29,12 +29,12 @@ public class PlayerBroadcastListener implements Listener, PluginMessageListener 
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        event.joinMessage(null); // supprime le message Paper par défaut
+        event.joinMessage(null); // delete default Paper message
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        event.quitMessage(null); // supprime le message Paper par défaut
+        event.quitMessage(null); // delete default Paper message
     }
 
     @Override

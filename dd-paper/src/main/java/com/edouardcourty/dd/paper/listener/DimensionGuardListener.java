@@ -12,14 +12,14 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 /**
- * Garantit qu'aucun joueur ne reste dans un monde qui n'est pas la dimension
- * gérée par ce serveur.
+ * Ensures that no player remains in a world that is not the dimension
+ * managed by this server.
  *
  * <ul>
- *   <li>À la connexion : vérifie après un court délai (le temps que le DIM_SWITCH
- *       éventuel ait eu lieu) que le joueur est dans le bon monde.</li>
- *   <li>Au changement de monde : corrige immédiatement si le nouveau monde est
- *       incorrect (ex : commande /world par un admin).</li>
+ *   <li>On join: checks after a short delay (enough time for an eventual DIM_SWITCH
+ *       to occur) that the player is in the correct world.</li>
+ *   <li>On world change: corrects immediately if the new world is
+ *       incorrect (e.g. /world command by an admin).</li>
  * </ul>
  */
 public class DimensionGuardListener implements Listener {
@@ -34,8 +34,8 @@ public class DimensionGuardListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        // Délai : laisse le temps au DimensionSwitchListener de téléporter le joueur
-        // avant de vérifier. 20 ticks = 1 seconde, largement suffisant.
+        // Delay: gives DimensionSwitchListener time to teleport the player
+        // before checking. 20 ticks = 1 second, which is more than enough.
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline()) guard(player);
         }, 20L);
@@ -52,22 +52,22 @@ public class DimensionGuardListener implements Listener {
         String currentWorld = player.getWorld().getName();
         for (Dimension dim : dimensions) {
             if (currentWorld.equals(dim.toBukkitWorldName())) {
-                return; // Joueur dans un monde autorisé
+                return; // Player in an authorized world
             }
         }
 
-        // Joueur dans un monde non autorisé, on le renvoie dans le premier monde de la liste
+        // Player in an unauthorized world, send them to the first world in the list
         Dimension fallbackDimension = dimensions.get(0);
         String expected = fallbackDimension.toBukkitWorldName();
         World correct = plugin.getServer().getWorld(expected);
         if (correct == null) {
-            plugin.getLogger().severe("[DimensionGuard] Le monde de repli '" + expected + "' est introuvable !");
+            plugin.getLogger().severe("[DimensionGuard] Fallback world '" + expected + "' could not be found !");
             return;
         }
 
         plugin.getLogger().warning("[DimensionGuard] " + player.getName()
             + " was in '" + currentWorld
-            + "' (non géré par ce serveur). Téléportation vers '" + expected + "'.");
+            + "' (not managed by this server). Teleporting to '" + expected + "'.");
 
         player.teleport(correct.getSpawnLocation());
     }

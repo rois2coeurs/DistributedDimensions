@@ -25,7 +25,7 @@ public class NetherPortalListener implements Listener {
         
         Dimension dimension = DimensionUtil.fromWorld(e.getFrom().getWorld());
         if (dimension == Dimension.END) {
-            e.setCancelled(true); // portail Nether n'existe pas dans l'End
+            e.setCancelled(true); // Nether portal doesn't exist in the End
             return;
         }
 

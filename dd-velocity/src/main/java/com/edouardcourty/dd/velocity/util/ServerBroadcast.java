@@ -4,7 +4,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 
 /**
- * Utilitaire pour broadcaster un plugin message sur tous les serveurs enregistrés dans le proxy.
+ * Utility to broadcast a plugin message to all servers registered in the proxy.
  */
 public class ServerBroadcast {
 
