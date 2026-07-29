@@ -5,6 +5,7 @@ import com.edouardcourty.dd.common.model.Dimension;
 import com.edouardcourty.dd.common.model.PortalConstants;
 import com.edouardcourty.dd.paper.messaging.EntityTransferSerializer;
 import com.edouardcourty.dd.paper.service.NetherCoordinateScaler;
+import com.edouardcourty.dd.paper.util.DimensionUtil;
 import com.google.common.io.ByteStreams;
 import io.papermc.paper.event.entity.EntityInsideBlockEvent;
 import org.bukkit.Material;
@@ -29,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *   déclenche pas EntityPortalEvent pour les non-joueurs dans les portails End)
  */
 public class EntityPortalListener implements Listener {
-    private final Dimension dimension;
     private final JavaPlugin plugin;
 
     /** UUIDs d'entités récemment spawned via transfer — ignorés pendant 15s pour éviter re-trigger. */
@@ -40,8 +40,7 @@ public class EntityPortalListener implements Listener {
         RECENTLY_TRANSFERRED.put(uuid, System.currentTimeMillis());
     }
 
-    public EntityPortalListener(Dimension dimension, JavaPlugin plugin) {
-        this.dimension = dimension;
+    public EntityPortalListener(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -51,6 +50,8 @@ public class EntityPortalListener implements Listener {
     public void onEntityPortal(EntityPortalEvent e) {
         Entity entity = e.getEntity();
         if (entity instanceof Player) return;
+        
+        Dimension dimension = DimensionUtil.fromWorld(e.getFrom().getWorld());
         if (dimension == Dimension.END) return; // pas de portail nether dans l'End vanilla
 
         if (isRecentlyTransferred(entity)) { e.setCancelled(true); return; }
@@ -77,6 +78,7 @@ public class EntityPortalListener implements Listener {
 
         if (isRecentlyTransferred(entity)) return;
 
+        Dimension dimension = DimensionUtil.fromWorld(e.getBlock().getWorld());
         Dimension target;
         double destX, destY, destZ;
 

@@ -10,11 +10,9 @@ import org.jetbrains.annotations.NotNull;
 public class DistributedDimensionsCommand implements CommandExecutor {
     
     private final JavaPlugin plugin;
-    private final Dimension dimension;
     
-    public DistributedDimensionsCommand(JavaPlugin plugin, Dimension dimension) {
+    public DistributedDimensionsCommand(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.dimension = dimension;
     }
 
     @Override
@@ -29,7 +27,7 @@ public class DistributedDimensionsCommand implements CommandExecutor {
         
         sender.sendMessage("§b=== DistributedDimensions Info ===");
         sender.sendMessage("§7Version: §a" + plugin.getDescription().getVersion());
-        sender.sendMessage("§7Current Dimension: §e" + dimension.name());
+        sender.sendMessage("§7Multi-Dimension Mode: §aEnabled");
         sender.sendMessage("§7Data Transfer: " + (transferData ? "§aEnabled" : "§cDisabled"));
         sender.sendMessage("§7Debug Mode: " + (debug ? "§aEnabled" : "§cDisabled"));
         

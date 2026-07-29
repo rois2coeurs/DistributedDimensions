@@ -26,7 +26,7 @@ class DistributedDimensionsCommandTest {
         when(config.getBoolean("transfer-data", true)).thenReturn(true);
         when(config.getBoolean("debug", false)).thenReturn(false);
         
-        DistributedDimensionsCommand commandExecutor = new DistributedDimensionsCommand(plugin, Dimension.NETHER);
+        DistributedDimensionsCommand commandExecutor = new DistributedDimensionsCommand(plugin);
         
         CommandSender sender = mock(CommandSender.class);
         when(sender.hasPermission("distributeddimensions.admin")).thenReturn(true);
@@ -37,7 +37,7 @@ class DistributedDimensionsCommandTest {
         assertTrue(result);
         verify(sender).sendMessage("§b=== DistributedDimensions Info ===");
         verify(sender).sendMessage("§7Version: §a1.0.0");
-        verify(sender).sendMessage("§7Current Dimension: §eNETHER");
+        verify(sender).sendMessage("§7Multi-Dimension Mode: §aEnabled");
         verify(sender).sendMessage("§7Data Transfer: §aEnabled");
         verify(sender).sendMessage("§7Debug Mode: §cDisabled");
     }
@@ -45,7 +45,7 @@ class DistributedDimensionsCommandTest {
     @Test
     void testCommandNoPermission() {
         JavaPlugin plugin = mock(JavaPlugin.class);
-        DistributedDimensionsCommand commandExecutor = new DistributedDimensionsCommand(plugin, Dimension.OVERWORLD);
+        DistributedDimensionsCommand commandExecutor = new DistributedDimensionsCommand(plugin);
         
         CommandSender sender = mock(CommandSender.class);
         when(sender.hasPermission("distributeddimensions.admin")).thenReturn(false);

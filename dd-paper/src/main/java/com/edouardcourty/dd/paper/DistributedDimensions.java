@@ -16,20 +16,32 @@ import com.edouardcourty.dd.paper.service.VelocityPluginMessageSwitchService;
 import com.edouardcourty.dd.paper.store.PrePortalPositionStore;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DistributedDimensions extends JavaPlugin {
-    private Dimension dimension;
     private DimensionSwitchService dimensionSwitchService;
+    private List<Dimension> managedDimensions;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
-        dimension = Dimension.valueOf(getConfig().getString("world", Dimension.OVERWORLD.name()));
+        managedDimensions = new ArrayList<>();
+        List<String> worldsList = getConfig().getStringList("worlds");
+        if (worldsList != null && !worldsList.isEmpty()) {
+            for (String w : worldsList) {
+                managedDimensions.add(Dimension.valueOf(w.toUpperCase()));
+            }
+        } else {
+            managedDimensions.add(Dimension.valueOf(getConfig().getString("world", Dimension.OVERWORLD.name()).toUpperCase()));
+        }
+
         dimensionSwitchService = new VelocityPluginMessageSwitchService(this);
         
         org.bukkit.command.PluginCommand ddinfoCmd = getCommand("ddinfo");
         if (ddinfoCmd != null) {
-            ddinfoCmd.setExecutor(new com.edouardcourty.dd.paper.command.DistributedDimensionsCommand(this, dimension));
+            ddinfoCmd.setExecutor(new com.edouardcourty.dd.paper.command.DistributedDimensionsCommand(this));
         }
 
         PrePortalPositionStore positionStore = new PrePortalPositionStore(this);
@@ -48,10 +60,10 @@ public class DistributedDimensions extends JavaPlugin {
         getServer().getMessenger().registerIncomingPluginChannel(this, Channels.PLAYER_BROADCAST.toString(), broadcastListener);
         getServer().getPluginManager().registerEvents(broadcastListener, this);
 
-        getServer().getPluginManager().registerEvents(new NetherPortalListener(dimension, dimensionSwitchService, positionStore), this);
-        getServer().getPluginManager().registerEvents(new EndPortalListener(dimension, dimensionSwitchService, positionStore), this);
-        getServer().getPluginManager().registerEvents(new EntityPortalListener(dimension, this), this);
-        getServer().getPluginManager().registerEvents(new RespawnListener(dimension, dimensionSwitchService, this), this);
-        getServer().getPluginManager().registerEvents(new DimensionGuardListener(this, dimension), this);
+        getServer().getPluginManager().registerEvents(new NetherPortalListener(dimensionSwitchService, positionStore), this);
+        getServer().getPluginManager().registerEvents(new EndPortalListener(dimensionSwitchService, positionStore), this);
+        getServer().getPluginManager().registerEvents(new EntityPortalListener(this), this);
+        getServer().getPluginManager().registerEvents(new RespawnListener(dimensionSwitchService, this), this);
+        getServer().getPluginManager().registerEvents(new DimensionGuardListener(this, managedDimensions), this);
     }
 }

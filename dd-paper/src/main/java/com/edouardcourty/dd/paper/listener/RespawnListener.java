@@ -3,6 +3,7 @@ package com.edouardcourty.dd.paper.listener;
 import com.edouardcourty.dd.common.model.Dimension;
 import com.edouardcourty.dd.common.model.LocationData;
 import com.edouardcourty.dd.common.service.DimensionSwitchService;
+import com.edouardcourty.dd.paper.util.DimensionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,18 +19,17 @@ import org.bukkit.plugin.java.JavaPlugin;
  * se charge de trouver un sol sûr à destination.
  */
 public class RespawnListener implements Listener {
-    private final Dimension dimension;
     private final DimensionSwitchService dimensionSwitchService;
     private final JavaPlugin plugin;
 
-    public RespawnListener(Dimension dimension, DimensionSwitchService dimensionSwitchService, JavaPlugin plugin) {
-        this.dimension = dimension;
+    public RespawnListener(DimensionSwitchService dimensionSwitchService, JavaPlugin plugin) {
         this.dimensionSwitchService = dimensionSwitchService;
         this.plugin = plugin;
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
+        Dimension dimension = DimensionUtil.fromWorld(e.getPlayer().getWorld());
         if (dimension == Dimension.OVERWORLD) return;
 
         // Récupère le point de respawn du joueur (lit/ancre de respawn).

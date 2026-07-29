@@ -5,17 +5,16 @@ import com.edouardcourty.dd.common.model.LocationData;
 import com.edouardcourty.dd.common.model.PortalConstants;
 import com.edouardcourty.dd.common.service.DimensionSwitchService;
 import com.edouardcourty.dd.paper.store.PrePortalPositionStore;
+import com.edouardcourty.dd.paper.util.DimensionUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPortalEvent;
 
 public class EndPortalListener implements Listener {
-    private final Dimension dimension;
     private final DimensionSwitchService dimensionSwitchService;
     private final PrePortalPositionStore positionStore;
 
-    public EndPortalListener(Dimension dimension, DimensionSwitchService dimensionSwitchService, PrePortalPositionStore positionStore) {
-        this.dimension = dimension;
+    public EndPortalListener(DimensionSwitchService dimensionSwitchService, PrePortalPositionStore positionStore) {
         this.dimensionSwitchService = dimensionSwitchService;
         this.positionStore = positionStore;
     }
@@ -26,6 +25,7 @@ public class EndPortalListener implements Listener {
 
         e.setCancelled(true);
 
+        Dimension dimension = DimensionUtil.fromWorld(e.getFrom().getWorld());
         if (dimension == Dimension.NETHER) return; // portail End n'a pas de sens dans le Nether
 
         positionStore.save(e.getPlayer().getUniqueId(), e.getFrom());

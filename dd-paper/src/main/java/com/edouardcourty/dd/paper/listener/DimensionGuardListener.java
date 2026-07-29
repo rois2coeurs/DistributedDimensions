@@ -2,6 +2,7 @@ package com.edouardcourty.dd.paper.listener;
 
 import com.edouardcourty.dd.common.model.Dimension;
 import com.edouardcourty.dd.paper.DistributedDimensions;
+import java.util.List;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,11 +24,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
  */
 public class DimensionGuardListener implements Listener {
     private final DistributedDimensions plugin;
-    private final Dimension dimension;
+    private final List<Dimension> dimensions;
 
-    public DimensionGuardListener(DistributedDimensions plugin, Dimension dimension) {
+    public DimensionGuardListener(DistributedDimensions plugin, List<Dimension> dimensions) {
         this.plugin = plugin;
-        this.dimension = dimension;
+        this.dimensions = dimensions;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -46,18 +47,27 @@ public class DimensionGuardListener implements Listener {
     }
 
     private void guard(Player player) {
-        String expected = dimension.toBukkitWorldName();
-        if (player.getWorld().getName().equals(expected)) return;
+        if (dimensions.isEmpty()) return;
 
+        String currentWorld = player.getWorld().getName();
+        for (Dimension dim : dimensions) {
+            if (currentWorld.equals(dim.toBukkitWorldName())) {
+                return; // Joueur dans un monde autorisé
+            }
+        }
+
+        // Joueur dans un monde non autorisé, on le renvoie dans le premier monde de la liste
+        Dimension fallbackDimension = dimensions.get(0);
+        String expected = fallbackDimension.toBukkitWorldName();
         World correct = plugin.getServer().getWorld(expected);
         if (correct == null) {
-            plugin.getLogger().severe("[DimensionGuard] Le monde '" + expected + "' est introuvable sur ce serveur !");
+            plugin.getLogger().severe("[DimensionGuard] Le monde de repli '" + expected + "' est introuvable !");
             return;
         }
 
         plugin.getLogger().warning("[DimensionGuard] " + player.getName()
-            + " was in '" + player.getWorld().getName()
-            + "' au lieu de '" + expected + "' — correction automatique.");
+            + " was in '" + currentWorld
+            + "' (non géré par ce serveur). Téléportation vers '" + expected + "'.");
 
         player.teleport(correct.getSpawnLocation());
     }
