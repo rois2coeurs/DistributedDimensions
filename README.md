@@ -4,13 +4,12 @@
 
 A Minecraft plugin system that splits a world across **one Paper server per dimension**, coordinated by a Velocity proxy.
 
-```
-[Player] ──► [Velocity Proxy (dd-velocity)]
-                  │
-        ┌─────────┼─────────┐
-        ▼         ▼         ▼
-  [Overworld]  [Nether]   [End]
-  (dd-paper)  (dd-paper) (dd-paper)
+```mermaid
+flowchart TD
+    Player(["Player"]) --> Velocity["Velocity Proxy<br/>(dd-velocity)"]
+    Velocity --> Overworld["Overworld<br/>(dd-paper)"]
+    Velocity --> Nether["Nether<br/>(dd-paper)"]
+    Velocity --> End["End<br/>(dd-paper)"]
 ```
 
 Crossing a portal feels identical to vanilla: inventory, XP, hunger, gamemode, and chat are preserved across all servers in real time.
