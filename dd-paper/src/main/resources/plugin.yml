@@ -4,6 +4,7 @@ main: com.edouardcourty.dd.paper.DistributedDimensions
 version: 1.0.0
 api-version: 26.2
 author: Edouard Courty <https://github.com/EdouardCourty>
+depend: [NBTAPI]
 commands:
   ddinfo:
     description: Displays information about DistributedDimensions settings.
